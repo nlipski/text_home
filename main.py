@@ -26,22 +26,11 @@ def sms_reply():
     from_num = request.values.get('To', None)
 
     locations = get_locations(body)
-    steps = parse_directions(locations.toLoc, locations.fromLoc, locations.mode)
+    steps = parse_directions(locations[0], locations[1], locations[2])
 
-    message = ""
-
-    for step in steps:
-        line = "For " + step["distance"]["text"] + " " + step["html_instructions"]
-        print(line)
-        message += " " + line
-
-
-    steps = parse_directions(locations[0], locations[1])
-
-    message = ""
     send_direction(steps, from_num, to_num)
     resp = MessagingResponse()
-    resp.message(message)
+    resp.message("Done")
 
     return str(resp)
 
@@ -68,6 +57,7 @@ def get_locations(incoming_text):
     r=requests.post("https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=" + google_api_key, json=data)
     testing = json.loads(r.text)
     testbla = testing["entities"]
+
     toLoc = ""
     fromLoc = ""
     mode = "driving"
@@ -89,9 +79,9 @@ def get_locations(incoming_text):
             if entities["name"] == "transit":
                 mode = "transit"
 
-    return {toLoc: toLoc, fromLoc: fromLoc, mode: mode}
+    return [fromLoc, toLoc, mode ]
 
-def parse_directions(toLoc, fromLoc, mode):
+def parse_directions(fromLoc, toLoc, mode):
     r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
     testing = json.loads(r.text)
 
