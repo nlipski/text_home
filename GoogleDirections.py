@@ -2,36 +2,7 @@ import requests
 import json
 
 
-
-
-def check_location(location):
-
-    r = requests.get(
-        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + api_key + "&input=" + location + "&inputtype=textquery");
-    testing = json.loads(r.text)
-    candidates = testing["candidates"]
-
-    if(testing["status"] == "ZERO_RESULTS"):
-        autoAddress = autocomplete_location(location)
-        print("Did you mean to typeasd " + autoAddress + "?")
-        questionAddress = autoAddress
-    else:
-        for place in candidates:
-            r = requests.get(
-                "https://maps.googleapis.com/maps/api/place/details/json?key=" + api_key + "&placeid=" + place["place_id"])
-            ploop = json.loads(r.text)
-            questionAddress = ploop["result"]["formatted_address"]
-            print("Did you mean " + questionAddress + "?")
-
-    return questionAddress
-
-def autocomplete_location(location):
-    r = requests.get(
-        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + api_key + "&input=" + location);
-    testing = json.loads(r.text)
-
-    descr = testing["predictions"][0]["description"]
-    return descr
+from inner_functions import get_locations, check_location, google_api_key
 
 incoming_text = "I am in Kingston, ON and want to walk to Disneyland, FL."
 
@@ -40,7 +11,7 @@ dataa = {"document": {
     "type": "PLAIN_TEXT",
     "content": incoming_text},
     "encodingType":"UTF16"}
-r=requests.post("https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=" + api_key, json=dataa)
+r=requests.post("https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=" + google_api_key, json=dataa)
 testing = json.loads(r.text)
 testbla = testing["entities"]
 toLoc = ""
@@ -76,7 +47,7 @@ for entities in testbla:
 #print(r.text)
 
 
-r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + api_key)
+r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
 testing = json.loads(r.text)
 something = testing["routes"]
 some = something[0]
