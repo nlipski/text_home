@@ -16,6 +16,9 @@ account = "ACd6f3f6f499dc943cbca7ee0ce16aff6e"
 token = "8377bf56ca922921e9b61547d951c018"
 client = Client(account, token)
 
+@app.route("/", methods=['GET', 'POST'])
+def sample_replier():
+    print  ("SAMPLE")
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
