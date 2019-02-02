@@ -8,12 +8,13 @@ from state_functions import setLocation, getTo, confirmTo, getFrom, confirmFrom,
 from tokens import client
 import datetime
 import json
+import os
 
-SECRET_KEY = 'be3e360b8fd84f3855468d2a1511cc04'
+
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-gmaps = googlemaps.Client(key=google_api_key)
+gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
 
 defaultLocations = json.dumps({'locations':[]})
 
