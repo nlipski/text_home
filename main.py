@@ -33,7 +33,9 @@ def sms_reply():
 
     if counter >= 0:
         resp = MessagingResponse()
-        resp.message = "You have messaged " + str(counter) + " times."
+        message = "You have messaged " + str(counter) + " times."
+        print (message)
+        resp.message = message
         return str(resp)
 
     resp = MessagingResponse()
