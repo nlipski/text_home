@@ -1,7 +1,6 @@
 import requests
 import json
-
-google_api_key = "AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
+from tokens import google_api_key
 
 def get_locations(incoming_text):
     data={"document":{"type":"PLAIN_TEXT","content":incoming_text},"encodingType":"UTF16"}

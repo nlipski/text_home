@@ -4,6 +4,8 @@ from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, google_api_key, parse_directions, locationsClass
 from default_messages import getHelp, checkConfirm, storedLocationClass
+from state_functions import setLocation, getTo, confirmTo, getFrom, confirmFrom, clearConversationState
+from tokens import client
 import datetime
 import json
 
@@ -12,10 +14,6 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 gmaps = googlemaps.Client(key=google_api_key)
-
-account = "ACd6f3f6f499dc943cbca7ee0ce16aff6e"
-token = "8377bf56ca922921e9b61547d951c018"
-client = Client(account, token)
 
 defaultLocations = json.dumps({'locations':[]})
 
@@ -40,18 +38,7 @@ def sms_reply():
         client.messages.create(to=to_num, from_=from_num,body=getHelp())
         return ''
     elif body.lower().startswith('set-location'):
-        clearConversationState()
-        params = body.lower().split(' ')
-        if len(params) > 2:
-            client.messages.create(to=to_num, from_=from_num,body='Oops! Locations must only be 1 word.')
-        elif len (params) == 1:
-            client.messages.create(to=to_num, from_=from_num,body='What is the name of the location?')
-            session['state'] = 'setCustomLocationName'
-        else:
-            var = params[1]
-            client.messages.create(to=to_num, from_=from_num,body='What is location of "' + var + '"?')
-            session['state'] = 'setCustomLocation'
-            session['locationVarName'] = var
+        setLocation(body, to_num, from_num)
         return ''
     elif body.lower() == 'get-locations':
         locs = session.get('customLocations', '')
@@ -113,35 +100,17 @@ def sms_reply():
             session['transport_mode'] = locations.mode
             checkLocations = 1
         elif state == 'getTo':
-            locations.toLoc = check_location(body)
-            session['to_location'] = locations.toLoc
-            session['state'] = 'confirmTo'
-            confirmto = "Please confirm this is your destination: " + locations.toLoc
-            client.messages.create(to=to_num, from_=from_num,body=confirmto)
+            locations.toLoc = getTo(body, to_num, from_num)
         elif state == 'getFrom':
-            locations.fromLoc = check_location(body)
-            session['from_location'] = locations.fromLoc
-            session['state'] = 'confirmFrom'
-            confirmfrom = "Please confirm this is where you are coming from: " + locations.fromLoc
-            client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
+            locations.fromLoc = getFrom(body, to_num, from_num)
         elif state == 'confirmTo':
-            if (checkConfirm(body)):
+            if (confirmTo(body, to_num, from_num)):
                 confirmedTo = 1
-                session['confirmed_to'] = confirmedTo
                 checkLocations = 1
-            else:
-                session['state'] = 'getTo'
-                wheretogo = "Okay, where do you want to go?"
-                client.messages.create(to=to_num, from_=from_num,body=wheretogo)
         elif state == 'confirmFrom':
-            if (checkConfirm(body)):
+            if (confirmFrom(body, to_num, from_num)):
                 confirmedFrom = 1
-                session['confirmed_from'] = confirmedFrom
                 checkLocations = 1
-            else:
-                session['state'] = 'getFrom'
-                wheretogo = "Okay, where are you?"
-                client.messages.create(to=to_num, from_=from_num,body=wheretogo)
         elif state == 'setCustomLocationName':
             client.messages.create(to=to_num, from_=from_num,body='What is location of "' + body.lower() + '"?')
             session['state'] = 'setCustomLocation'
@@ -188,22 +157,13 @@ def sms_reply():
                 wheretogo = "Okay, Where do you want to go?"
                 client.messages.create(to=to_num, from_=from_num,body=wheretogo)
             elif confirmedTo == 0:
-                if (checkConfirm(body)):
-                    confirmedTo = 1
-                    session['confirmed_to'] = confirmedTo
-                    checkLocations = 1
-                else:
-                    session['state'] = 'getTo'
-                    wheretogo = "Okay, where do you want to go?"
-                    client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+                confirmTo(body, to_num, from_num)
             elif locations.fromLoc == '':
                 session['state'] = 'getFrom'
                 whereareyou = "Okay, Where are you?"
                 client.messages.create(to=to_num, from_=from_num,body=whereareyou)
             elif confirmedFrom  == 0:
-                session['state'] = 'confirmFrom'
-                confirmfrom = "Please confirm this is where you are coming from: " + locations.fromLoc
-                client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
+                confirmFrom(body, to_num, from_num)
             else:
                 directions = parse_directions(locations)
                 routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
@@ -246,14 +206,6 @@ def get_directions(loc_from, loc_to, transport):
                                          departure_time=now)
 
     return directions_result
-
-def clearConversationState():
-    session['state'] = 'new'
-    session['to_location'] = ''
-    session['from_location'] = ''
-    session['transport_mode'] = ''
-    session['confirmed_to'] = 0
-    session['confirmed_from'] = 0
 
 
 if __name__ == "__main__":
