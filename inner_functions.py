@@ -1,27 +1,12 @@
 import requests
 import json
-from tokens import GOOGLE_API_KEY
-import re
-
-def dms2dd(degrees, minutes, seconds, direction):
-    dd = float(degrees) + float(minutes)/60 + float(seconds)/(60*60);
-    if direction == 'S' or direction == 'W':
-        dd *= -1
-    return dd;
-
-
-def get_latlong(incoming_text):
-    parts = re.split("[^\d\w]+", incoming_text)
-    lat = dms2dd(parts[0],parts[1],parts[2],parts[3])
-    lng = dms2dd(parts[4],parts[5],parts[6],parts[7])
-
-    return lat, lng
-
+import re 
+google_api_key = "AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
 
 def get_locations(incoming_text):
     data={"document":{"type":"PLAIN_TEXT","content":incoming_text},"encodingType":"UTF16"}
 
-    r=requests.post("https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=" + GOOGLE_API_KEY, json=data)
+    r=requests.post("https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=" + google_api_key, json=data)
     testing = json.loads(r.text)
     testbla = testing["entities"]
 
@@ -37,7 +22,7 @@ def get_locations(incoming_text):
             else:
                 fromLoc = entities["name"]
         elif entities["type"] == "OTHER":
-            #print(entities["name"])
+            print(entities["name"])
             if entities["name"] == "driving" or entities["name"] == "drive":
                 mode = "driving"
             if entities["name"] == "walking" or entities["name"] == "walk":
@@ -55,7 +40,7 @@ def get_locations(incoming_text):
 
 def parse_directions(locations):
 
-    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + locations.fromLoc + "&destination=" + locations.toLoc + "&mode=" + locations.mode + "&key=" + GOOGLE_API_KEY + "&region=ca")
+    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + locations.fromLoc.location + "&destination=" + locations.toLoc.location + "&mode=" + locations.mode + "&key=" + google_api_key + "&region=ca")
 
     unparsed=response.json()
 
@@ -64,16 +49,11 @@ def parse_directions(locations):
     directions.to = unparsed["routes"][0]["legs"][0]["end_address"]
     directions.start = unparsed["routes"][0]["legs"][0]["start_address"]
     stepNum = 1
-    messageNum = 0
     for step in unparsed["routes"][0]["legs"][0]["steps"]:
         direction = step["html_instructions"].replace('<b>','').replace('</b>','')
-        newStep = str(stepNum) + '. ' + direction + '\n'
-        if (len(directions.steps[messageNum]) + len(newStep)) < 1450:
-            directions.steps[messageNum] += newStep
-        else:
-            messageNum += 1
-            directions.steps.append('')
-            directions.steps[messageNum] += newStep
+        notag = re.sub("<.*?>", " ", direction)
+        print (notag)
+        directions.steps += str(stepNum) + '. ' + direction + '\n'
         stepNum += 1
 
     return directions
@@ -82,16 +62,20 @@ class directionsClass:
     start = ''
     end = ''
     time = ''
-    steps = ['']
+    steps = ''
 
 class locationsClass:
-    fromLoc = ''
-    toLoc = ''
+    fromLoc = geoClass()
+    toLoc = geoClass()
     mode = ''
+
+class geoClass:
+    location=''
+    geo=''
 
 def autocomplete_location(location):
     r = requests.get(
-        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + GOOGLE_API_KEY + "&input=" + location+"&region=ca")
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + google_api_key + "&input=" + location+"&region=ca")
     testing = json.loads(r.text)
     if (testing['status'] == 'ZERO_RESULTS'):
         return ''
@@ -100,21 +84,28 @@ def autocomplete_location(location):
 
 def check_location(location):
     r = requests.get(
-        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + GOOGLE_API_KEY + "&input=" + location + "&inputtype=textquery"+"&region=ca"+"&fields=geometry,formatted_address,place_id")
+        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery"+"&region=ca"+"&fields=geometry,formatted_address,place_id")
     testing = json.loads(r.text)
-    #print("this is testing geo", testing)
+    print("this is testing geo",testing)
     candidates = testing["candidates"]
+
 
     questionAddress = ''
     if(testing["status"] == "ZERO_RESULTS"):
         autoAddress = autocomplete_location(location)
-        questionAddress = autoAddress
+        address = autoAddress
     else:
-        for place in candidates:
-            r = requests.get(
-                "https://maps.googleapis.com/maps/api/place/details/json?key=" + GOOGLE_API_KEY + "&placeid=" + place["place_id"])
-            ploop = json.loads(r.text)
-            #print(ploop)
-            questionAddress = ploop["result"]["formatted_address"]
 
-    return questionAddress
+        r = requests.get(
+                "https://maps.googleapis.com/maps/api/place/details/json?key=" + google_api_key + "&placeid=" + candidates[0]["place_id"])
+        ploop = json.loads(r.text)
+        geocoord= ploop["result"]["geometry"]["location"]
+        address = ploop["result"]["formatted_address"]
+        print( address  )
+        print ( geocoord)
+        geoadd=geoClass()
+        geoadd.geo=geocoord
+        geoadd.location=address
+
+
+    return geoadd,
