@@ -79,7 +79,7 @@ def sms_reply():
     steps = parse_directions(locations[0], locations[1], locations[2])
 
     send_direction(steps, from_num, to_num)
-    
+
     resp = MessagingResponse()
     resp.message("Done")
 
@@ -94,11 +94,8 @@ def cleanup_message(step):
 
 
 def send_direction(steps, from_num, to_num):
-    for step in steps:
-        line = "For " + step["distance"]["text"] + " " + step["html_instructions"]
-        line = cleanup_message(line)
         message = client.messages.create(to=to_num, from_=from_num,
-                                         body=line)
+                                         body=steps)
 def get_directions(loc_from, loc_to, transport):
     directions = []
 
@@ -145,14 +142,36 @@ def get_locations(incoming_text):
 
 def parse_directions(fromLoc, toLoc, mode):
 
-    r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
+    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
+
+    unparsed=response.json()
+
+    time = unparsed["routes"][0]["legs"][0]["duration"]["text"]
+    to =unparsed["routes"][0]["legs"][0]["end_address"]
+    start =unparsed["routes"][0]["legs"][0]["start_address"]
+    directions = []
+    for step in unparsed["routes"][0]["legs"][0]["steps"]: 
+        direction = step["html_instructions"].replace('<b>','').replace('</b>','')
+        directions.append(direction)
+    returntext= "Here are your instructions from",(start),"to" ,(to), ". It will take",(time),  (directions)
+
+
+    return returntext
+
+def check_location(location):
+    r = requests.get(
+        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery");
     testing = json.loads(r.text)
+    candidates = testing["candidates"]
 
-    something = testing["routes"]
-    some = something[0]
-    steps = some["legs"][0]["steps"]
+    for place in candidates:
+        r = requests.get(
+            "https://maps.googleapis.com/maps/api/place/details/json?key=" + google_api_key + "&placeid=" + place["place_id"])
+        ploop = json.loads(r.text)
+        questionAddress = ploop["result"]["formatted_address"]
+        print("Did you mean " + questionAddress + "?")
 
-    return steps
+    return questionAddress
 
 
 if __name__ == "__main__":
