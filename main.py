@@ -163,6 +163,7 @@ def sms_reply():
                 routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
                 client.messages.create(to=to_num, from_=from_num,body=routinglocation)
                 for step in directions.steps:
+                    step = html_tag_remover(step)
                     client.messages.create(to=to_num, from_=from_num,body=step)
                 session['state'] = 'new'
                 session['to_location'] = ''
