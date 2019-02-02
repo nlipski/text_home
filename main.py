@@ -25,77 +25,122 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
-    state = session.get('state', 'new')
-    print('initial state: ' + state)
-    lastTime = session.get('message_time', '')
-    now = datetime.datetime.now()
-    FMT = '%d-%m-%Y_%H:%M:%S'
-    session['message_time'] = now.strftime(FMT)
-    print(now.strftime(FMT))
-
-    if lastTime == '':
-        toLoc = ''
-        fromLoc = ''
-        mode = ''
+    if body.lower() == 'clear session':
         session['state'] = 'new'
-        state = 'new'
+        session['to_location'] = ''
+        session['from_location'] = ''
+        session['transport_mode'] = ''
+        session['message_time'] = ''
+        session['confirmed_to'] = 0
+        session['confirmed_from'] = 0
+        client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
+        return ''
     else:
-        timeDiff = now - datetime.datetime.strptime(lastTime, FMT)
-        print("time diff: " + str(timeDiff))
-        if timeDiff < datetime.timedelta(minutes=5):
-            toLoc = session.get('to_location', '')
-            fromLoc = session.get('from_location', '')
-            mode = session.get('transport_mode', '')
-        else:
+        state = session.get('state', 'new')
+        lastTime = session.get('message_time', '')
+        now = datetime.datetime.now()
+        FMT = '%d-%m-%Y_%H:%M:%S'
+        session['message_time'] = now.strftime(FMT)
+
+        confirmedTo = session.get('confirmed_to', 0)
+        confirmedFrom = session.get('confirmed_from', 0)
+
+        if lastTime == '':
             toLoc = ''
             fromLoc = ''
             mode = ''
             session['state'] = 'new'
             state = 'new'
+        else:
+            timeDiff = now - datetime.datetime.strptime(lastTime, FMT)
+            print("time diff: " + str(timeDiff))
+            if timeDiff < datetime.timedelta(minutes=5):
+                toLoc = session.get('to_location', '')
+                fromLoc = session.get('from_location', '')
+                mode = session.get('transport_mode', '')
+            else:
+                toLoc = ''
+                fromLoc = ''
+                mode = ''
+                session['state'] = 'new'
+                state = 'new'
 
-    locations = get_locations(body)
-    print(state)
-    if state == 'new':
-        fromLoc = locations[0]
-        toLoc = locations[1]
-        mode = locations[2]
-    elif state == 'getTo':
-        toLoc = locations[0]
-        session['to_location'] = toLoc
-        session['state'] = 'confirmTo'
-        print(toLoc)
-    elif state == 'getFrom':
-        fromLoc = locations[0]
-        session['from_location'] = fromLoc
-        session['state'] = 'confirmFrom'
-        print(fromLoc)
-    elif state == 'getMode':
-        mode = locations[2]
-        session['transport_mode'] = mode
-        session['state'] = 'confirmMode'
-        print(mode)
-    
-    if toLoc == '':
-        session['state'] = 'getTo'
-        print('getTo')
-        wheretogo = "Unfortunately we did not get where you wanted to go. Where do you want to go?"
-        client.messages.create(to=to_num, from_=from_num,body=wheretogo)
-    elif fromLoc == '':
-        session['state'] = 'getFrom'
-        print('getFrom')
-        whereareyou = "Unfortunately we did not get where you are. Where are you?"
-        client.messages.create(to=to_num, from_=from_num,body=whereareyou)
-    elif mode == '':
-        session['state'] = 'getMode'
-        print('getMode')
-        whereareyou = "Unfortunately we did not get how you want to get there. How do you want to do that?"
-        client.messages.create(to=to_num, from_=from_num,body=whereareyou)
-    else:
-        steps = parse_directions(locations[0], locations[1], locations[2])
-        send_direction(steps, from_num, to_num)
-        resp = MessagingResponse()
-        resp.message("Done")
-        return str(resp)
+        checkLocations = 0
+        if state == 'new':
+            locations = get_locations(body)
+            fromLoc = check_location(locations[0])
+            toLoc = check_location(locations[1])
+            mode = locations[2]
+            session['to_location'] = toLoc
+            session['from_location'] = fromLoc
+            session['transport_mode'] = mode
+            print('From: ' + fromLoc)
+            print('To: ' + toLoc)
+            print('Mode: ' + mode)
+            checkLocations = 1
+        elif state == 'getTo':
+            toLoc = check_location(body)
+            session['to_location'] = toLoc
+            session['state'] = 'confirmTo'
+            confirmto = "Please confirm this is your destination: " + toLoc
+            client.messages.create(to=to_num, from_=from_num,body=confirmto)
+        elif state == 'getFrom':
+            fromLoc = check_location(body)
+            session['from_location'] = fromLoc
+            session['state'] = 'confirmFrom'
+            confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
+            client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
+        elif state == 'confirmTo':
+            if (body.lower() == 'yes' or body.lower() == 'y'):
+                confirmedTo = 1
+                session['confirmed_to'] = confirmedTo
+                checkLocations = 1
+            else:
+                session['state'] = 'getTo'
+                wheretogo = "Okay, where do you want to go?"
+                client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+        elif state == 'confirmFrom':
+            if (body.lower() == 'yes' or body.lower() == 'y'):
+                confirmedFrom = 1
+                session['confirmed_from'] = confirmedFrom
+                checkLocations = 1
+            else:
+                session['state'] = 'getFrom'
+                wheretogo = "Okay, where are you?"
+                client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+        else:
+            checkLocations = 1
+        
+        if checkLocations == 1:
+            if toLoc == '':
+                session['state'] = 'getTo'
+                wheretogo = "Okay, Where do you want to go?"
+                client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+            elif confirmedTo == 0:
+                session['state'] = 'confirmTo'
+                confirmto = "Please confirm this is your destination: " + toLoc
+                client.messages.create(to=to_num, from_=from_num,body=confirmto)
+            elif fromLoc == '':
+                session['state'] = 'getFrom'
+                whereareyou = "Okay, Where are you?"
+                client.messages.create(to=to_num, from_=from_num,body=whereareyou)
+            elif confirmedFrom  == 0:
+                session['state'] = 'confirmFrom'
+                confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
+                client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
+            else:
+                routinglocation = "Sending directions from " + fromLoc + " to " + toLoc + " by " + mode
+                client.messages.create(to=to_num, from_=from_num,body=routinglocation)
+                #steps = parse_directions(fromLoc, toLoc, mode)
+                #send_direction(steps, from_num, to_num)
+                session['state'] = 'new'
+                session['to_location'] = ''
+                session['from_location'] = ''
+                session['transport_mode'] = ''
+                session['message_time'] = ''
+                session['confirmed_to'] = 0
+                session['confirmed_from'] = 0
+                client.messages.create(to=to_num, from_=from_num,body='Done!')
     return ''
 
 def cleanup_message(step):
@@ -172,7 +217,8 @@ def autocomplete_location(location):
     r = requests.get(
         "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + google_api_key + "&input=" + location);
     testing = json.loads(r.text)
-
+    if (testing['status'] == 'ZERO_RESULTS'):
+        return ''
     description = testing["predictions"][0]["description"]
     return description
 
@@ -182,9 +228,9 @@ def check_location(location):
     testing = json.loads(r.text)
     candidates = testing["candidates"]
 
+    questionAddress = ''
     if(testing["status"] == "ZERO_RESULTS"):
         autoAddress = autocomplete_location(location)
-        print("Did you mean to type " + autoAddress + "?")
         questionAddress = autoAddress
     else:
         for place in candidates:
@@ -192,7 +238,6 @@ def check_location(location):
                 "https://maps.googleapis.com/maps/api/place/details/json?key=" + google_api_key + "&placeid=" + place["place_id"])
             ploop = json.loads(r.text)
             questionAddress = ploop["result"]["formatted_address"]
-            print("Did you mean " + questionAddress + "?")
 
     return questionAddress
 
