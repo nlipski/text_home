@@ -8,7 +8,7 @@ from state_functions import setLocation, getTo, confirmTo, getFrom, confirmFrom,
 from tokens import client
 import datetime
 import json
-import os
+
 
 
 app = Flask(__name__)
