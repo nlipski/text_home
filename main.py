@@ -28,24 +28,59 @@ def sms_reply():
     counter = session.get('counter', 0)
     counter += 1
 
-    # Save the new counter value in the session
-    session['counter'] = counter
+    state = session.get('state', 'new')
+    lastTime = session.get('message_time', '')
+    now = datetime.now()
+    FMT = '%H:%M:%S'
+    session['message_time'] = now.strftime(FMT)
+    timeDiff = now - datetime.strptime(lastTime, FMT)
+    maxDiff = now.replace(hour=0, minute=5, second=0, microsecond=0)
+    if timeDiff < maxDiff:
+        toLoc = session.get('to_location', '')
+        fromLoc = session.get('from_location', '')
+        mode = session.get('transport_mode', '')
+    else:
+        toLoc = ''
+        fromLoc = ''
+        mode = ''
+        session['state'] = 'new'
+        state = 'new'
 
-    if counter >= 0:
-        resp = MessagingResponse()
-        message = "You have messaged " + str(counter) + " times."
-        print (message)
-        resp.message = message
-        return str(resp)
-
-    resp = MessagingResponse()
     locations = get_locations(body)
-    if locations == 0:
-        resp.message("STOP BEING DUMB")
-        return str(resp)
+    if state == 'new':
+        fromLoc = locations[0]
+        toLoc = locations[1]
+        mode = locations[2]
+    elif state == 'getTo':
+        toLoc = locations[0]
+    elif state == 'getFrom':
+        fromLoc = locations[0]
+    elif state == 'getMode':
+        mode = locations[2]
+    
+    if toLoc == '':
+        session['state'] = 'getTo'
+        print('getTo')
+        wheretogo = "Unfortunately we did not get where you wanted to go. Where do you want to go?"
+        client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+    elif fromLoc == '':
+        session['state'] = 'getFrom'
+        print('getFrom')
+        whereareyou = "Unfortunately we did not get where you are. Where are you?"
+        client.messages.create(to=to_num, from_=from_num,body=whereareyou)
+    elif mode == '':
+        session['state'] = 'getMode'
+        print('getMode')
+        whereareyou = "Unfortunately we did not get how you want to get there. How do you want to do that?"
+        client.messages.create(to=to_num, from_=from_num,body=whereareyou)
+    else:
+        client.messages.create(to=to_num, from_=from_num,body="STOP BEING DUMB")
+
     steps = parse_directions(locations[0], locations[1], locations[2])
 
     send_direction(steps, from_num, to_num)
+    
+    resp = MessagingResponse()
     resp.message("Done")
 
     return str(resp)
@@ -122,4 +157,3 @@ def parse_directions(fromLoc, toLoc, mode):
 
 if __name__ == "__main__":
     app.run(debug=True)
-print(message.sid)
