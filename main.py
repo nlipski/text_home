@@ -3,6 +3,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, session
 import googlemaps
 import json
+import requests
 from datetime import datetime
 
 
@@ -21,24 +22,27 @@ client = Client(account, token)
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
     body = request.values.get('Body', None)
-    #directions = get_directions("Sydney Town Hall", "Parramatta, NSW", "transit")
+    to_num = request.values.get('From', None)
+    from_num = request.values.get('To', None)
 
     locations = get_locations(body)
-    steps = parse_directions(locations.loc1, locations.loc2)
+    print (locations)
+
+    steps = parse_directions(locations[0], locations[1])
 
     message = ""
-
-    for step in steps:
-        line = "For " + step["distance"]["text"] + " " + step["html_instructions"]
-        print(line)
-        message += " " + line
-
-
+    send_direction(steps, from_num, to_num)
     resp = MessagingResponse()
     resp.message(message)
 
     return str(resp)
 
+def send_direction(steps, from_num, to_num):
+    for step in steps:
+
+        line = "For " + step["distance"]["text"] + " " + step["html_instructions"]
+        message = client.messages.create(to=to_num, from_=from_num,
+                                         body=line)
 def get_directions(loc_from, loc_to, transport):
     directions = []
 
@@ -64,8 +68,9 @@ def get_locations(incoming_text):
                 loc1 = entities["name"]
             elif loc2 == "":
                 loc2 = entities["name"]
-
-    return {loc1: loc1, loc2: loc2}
+    print (loc1)
+    print(loc2)
+    return [loc1, loc2]
 
 def parse_directions(loc1, loc2):
     r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + loc1 + "&destination=" + loc2 + "&key=" + google_api_key)
