@@ -4,7 +4,7 @@ import json
 
 from inner_functions import get_locations, check_location, google_api_key
 
-incoming_text = "I am in Kingston, ON and want to drive to belleville."
+incoming_text = "I am in Kingston, ON and want to drive to toronto."
 
 api_key = "AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
 dataa = {"document": {
@@ -28,12 +28,12 @@ for entities in testbla:
             print("TO B " + entities["name"])
             toLoc = entities["name"]
             toLoc = check_location(toLoc)
-            print(toLoc)
+            print("this is the checked location",toLoc)
         elif fromLoc == "":
             print("FROM B" + entities["name"])
             fromLoc = entities["name"]
             fromLoc = check_location(fromLoc)
-            print(fromLoc)
+            print("this is the checked from ",fromLoc)
     elif entities["type"] == "OTHER":
         if entities["name"] == "driving" or entities["name"] == "drive":
             mode = "driving"

@@ -63,8 +63,9 @@ def autocomplete_location(location):
 
 def check_location(location):
     r = requests.get(
-        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery"+"&region=ca")
+        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery"+"&region=ca"+"&fields=geometry,formatted_address,place_id")
     testing = json.loads(r.text)
+    print("this is testing geo",testing)
     candidates = testing["candidates"]
 
     questionAddress = ''
