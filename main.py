@@ -166,18 +166,31 @@ def parse_directions(fromLoc, toLoc, mode):
 
     return returntext
 
+def autocomplete_location(location):
+    r = requests.get(
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + google_api_key + "&input=" + location);
+    testing = json.loads(r.text)
+
+    description = testing["predictions"][0]["description"]
+    return description
+
 def check_location(location):
     r = requests.get(
         "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery");
     testing = json.loads(r.text)
     candidates = testing["candidates"]
 
-    for place in candidates:
-        r = requests.get(
-            "https://maps.googleapis.com/maps/api/place/details/json?key=" + google_api_key + "&placeid=" + place["place_id"])
-        ploop = json.loads(r.text)
-        questionAddress = ploop["result"]["formatted_address"]
-        print("Did you mean " + questionAddress + "?")
+    if(len(candidates) < 1):
+        autoAddress = autocomplete_location(location)
+        print("Did you mean to type " + autoAddress + "?")
+        questionAddress = autoAddress
+    else:
+        for place in candidates:
+            r = requests.get(
+                "https://maps.googleapis.com/maps/api/place/details/json?key=" + google_api_key + "&placeid=" + place["place_id"])
+            ploop = json.loads(r.text)
+            questionAddress = ploop["result"]["formatted_address"]
+            print("Did you mean " + questionAddress + "?")
 
     return questionAddress
 

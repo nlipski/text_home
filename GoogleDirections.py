@@ -11,17 +11,29 @@ def check_location(location):
     testing = json.loads(r.text)
     candidates = testing["candidates"]
 
-    for place in candidates:
-        r = requests.get(
-            "https://maps.googleapis.com/maps/api/place/details/json?key=" + api_key + "&placeid=" + place["place_id"])
-        ploop = json.loads(r.text)
-        questionAddress = ploop["result"]["formatted_address"]
-        print("Did you mean " + questionAddress + "?")
+    if(len(candidates) < 1):
+        autoAddress = autocomplete_location(location)
+        print("Did you mean to type " + autoAddress + "?")
+        questionAddress = autoAddress
+    else:
+        for place in candidates:
+            r = requests.get(
+                "https://maps.googleapis.com/maps/api/place/details/json?key=" + api_key + "&placeid=" + place["place_id"])
+            ploop = json.loads(r.text)
+            questionAddress = ploop["result"]["formatted_address"]
+            print("Did you mean " + questionAddress + "?")
 
     return questionAddress
 
+def autocomplete_location(location):
+    r = requests.get(
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + api_key + "&input=" + location);
+    testing = json.loads(r.text)
 
-incoming_text = "I am in Queens, ON and want to walk to Disneyland, FL."
+    descr = testing["predictions"][0]["description"]
+    return descr
+
+incoming_text = "I am in Kingston, ON and want to walk to Disneyland, FL."
 
 api_key = "AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
 dataa = {"document": {
@@ -40,13 +52,15 @@ for entities in testbla:
         index = int(entities["mentions"][0]["text"]["beginOffset"])
         reference = incoming_text[index-3:index]
         if reference == "to ":
-            print("TO " + entities["name"])
+            print("TO B " + entities["name"])
             toLoc = entities["name"]
             toLoc = check_location(toLoc)
+            print(toLoc)
         elif fromLoc == "":
-            print("FROM " + entities["name"])
+            print("FROM B" + entities["name"])
             fromLoc = entities["name"]
             fromLoc = check_location(fromLoc)
+            print(fromLoc)
     elif entities["type"] == "OTHER":
         if entities["name"] == "driving" or entities["name"] == "drive":
             mode = "driving"
