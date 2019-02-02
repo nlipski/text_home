@@ -32,25 +32,40 @@ def get_locations(incoming_text):
             if entities["name"] == "transit" or entities["name"] == "train" or entities["name"] == "bus":
                 mode = "transit"
 
-    return [fromLoc, toLoc, mode]
+    locations = locationsClass()
+    locations.fromLoc = check_location(fromLoc)
+    locations.toLoc = check_location(toLoc)
+    locations.mode = mode
+    return locations
 
-def parse_directions(fromLoc, toLoc, mode):
+def parse_directions(locations):
 
-    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
+    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + locations.fromLoc + "&destination=" + locations.toLoc + "&mode=" + locations.mode + "&key=" + google_api_key)
 
     unparsed=response.json()
 
-    time = unparsed["routes"][0]["legs"][0]["duration"]["text"]
-    to =unparsed["routes"][0]["legs"][0]["end_address"]
-    start =unparsed["routes"][0]["legs"][0]["start_address"]
-    directions = []
+    directions = directionsClass()
+    directions.time = unparsed["routes"][0]["legs"][0]["duration"]["text"]
+    directions.to = unparsed["routes"][0]["legs"][0]["end_address"]
+    directions.start = unparsed["routes"][0]["legs"][0]["start_address"]
+    stepNum = 1
     for step in unparsed["routes"][0]["legs"][0]["steps"]:
         direction = step["html_instructions"].replace('<b>','').replace('</b>','')
-        directions.append(direction)
-    returntext= "Here are your instructions from",(start),"to" ,(to), ". It will take",(time),  (directions)
+        directions.steps += str(stepNum) + '. ' + direction + '\n'
+        stepNum += 1
 
+    return directions
 
-    return returntext
+class directionsClass:
+    start = ''
+    end = ''
+    time = ''
+    steps = ''
+
+class locationsClass:
+    fromLoc = ''
+    toLoc = ''
+    mode = ''
 
 def autocomplete_location(location):
     r = requests.get(
