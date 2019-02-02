@@ -6,7 +6,7 @@ import json
 import requests
 from datetime import datetime
 
-
+SECRET_KEY = 'a secret key'
 app = Flask(__name__)
 app.config.from_object(__name__)
 
