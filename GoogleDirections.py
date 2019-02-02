@@ -5,20 +5,33 @@ import json
 
 
 def check_location(location):
+
     r = requests.get(
         "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + api_key + "&input=" + location + "&inputtype=textquery");
     testing = json.loads(r.text)
     candidates = testing["candidates"]
 
-    for place in candidates:
-        r = requests.get(
-            "https://maps.googleapis.com/maps/api/place/details/json?key=" + api_key + "&placeid=" + place["place_id"])
-        ploop = json.loads(r.text)
-        questionAddress = ploop["result"]["formatted_address"]
-        print("Did you mean " + questionAddress + "?")
+    if(len(candidates) < 1):
+        autoAddress = autocomplete_location(location)
+        print("Did you mean to type " + autoAddress + "?")
+        questionAddress = autoAddress
+    else:
+        for place in candidates:
+            r = requests.get(
+                "https://maps.googleapis.com/maps/api/place/details/json?key=" + api_key + "&placeid=" + place["place_id"])
+            ploop = json.loads(r.text)
+            questionAddress = ploop["result"]["formatted_address"]
+            print("Did you mean " + questionAddress + "?")
 
     return questionAddress
 
+def autocomplete_location(location):
+    r = requests.get(
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + api_key + "&input=" + location);
+    testing = json.loads(r.text)
+
+    descr = testing["predictions"][0]["description"]
+    return descr
 
 incoming_text = "I am in Kingston, ON and want to walk to Disneyland, FL."
 
@@ -39,10 +52,15 @@ for entities in testbla:
         index = int(entities["mentions"][0]["text"]["beginOffset"])
         reference = incoming_text[index-3:index]
         if reference == "to ":
+            print("TO B " + entities["name"])
             toLoc = entities["name"]
-            check_location(toLoc)
-        else:
+            toLoc = check_location(toLoc)
+            print(toLoc)
+        elif fromLoc == "":
+            print("FROM B" + entities["name"])
             fromLoc = entities["name"]
+            fromLoc = check_location(fromLoc)
+            print(fromLoc)
     elif entities["type"] == "OTHER":
         if entities["name"] == "driving" or entities["name"] == "drive":
             mode = "driving"
@@ -57,13 +75,13 @@ for entities in testbla:
 
 #print(r.text)
 
-#
-# r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + api_key)
-# testing = json.loads(r.text)
-# something = testing["routes"]
-# some = something[0]
-# steps = some["legs"][0]["steps"]
+
+r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + api_key)
+testing = json.loads(r.text)
+something = testing["routes"]
+some = something[0]
+steps = some["legs"][0]["steps"]
 
 
-#for step in steps:
-#    print("For " + step["distance"]["text"] + " " + step["html_instructions"])
+for step in steps:
+   print("For " + step["distance"]["text"] + " " + step["html_instructions"])
