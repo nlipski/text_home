@@ -25,6 +25,14 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
+    counter = session.get('counter', 0)
+    counter += 1
+
+    # Save the new counter value in the session
+    session['counter'] = counter
+
+    client.messages.create(to_num, from_num, "You have messaged " + counter + " times.")
+
     resp = MessagingResponse()
     locations = get_locations(body)
     if locations == 0:
