@@ -1,7 +1,24 @@
 import requests
 import json
+import re
 
 google_api_key = "AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
+
+
+def dms2dd(degrees, minutes, seconds, direction):
+    dd = float(degrees) + float(minutes)/60 + float(seconds)/(60*60);
+    if direction == 'S' or direction == 'W':
+        dd *= -1
+    return dd;
+
+
+def get_latlong(incoming_text):
+    parts = re.split("[^\d\w]+", incoming_text)
+    lat = dms2dd(parts[0],parts[1],parts[2],parts[3])
+    lng = dms2dd(parts[4],parts[5],parts[6],parts[7])
+
+    return lat, lng
+
 
 def get_locations(incoming_text):
     data={"document":{"type":"PLAIN_TEXT","content":incoming_text},"encodingType":"UTF16"}
@@ -80,7 +97,7 @@ def check_location(location):
     r = requests.get(
         "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery"+"&region=ca"+"&fields=geometry,formatted_address,place_id")
     testing = json.loads(r.text)
-    print("this is testing geo",testing)
+    print("this is testing geo", testing)
     candidates = testing["candidates"]
 
     questionAddress = ''
@@ -92,6 +109,7 @@ def check_location(location):
             r = requests.get(
                 "https://maps.googleapis.com/maps/api/place/details/json?key=" + google_api_key + "&placeid=" + place["place_id"])
             ploop = json.loads(r.text)
+            print(ploop)
             questionAddress = ploop["result"]["formatted_address"]
 
     return questionAddress
