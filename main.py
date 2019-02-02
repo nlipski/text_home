@@ -26,7 +26,15 @@ def sms_reply():
     from_num = request.values.get('To', None)
 
     locations = get_locations(body)
-    print (locations)
+    steps = parse_directions(locations.toLoc, locations.fromLoc, locations.mode)
+
+    message = ""
+
+    for step in steps:
+        line = "For " + step["distance"]["text"] + " " + step["html_instructions"]
+        print(line)
+        message += " " + line
+
 
     steps = parse_directions(locations[0], locations[1])
 
@@ -60,20 +68,31 @@ def get_locations(incoming_text):
     r=requests.post("https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=" + google_api_key, json=data)
     testing = json.loads(r.text)
     testbla = testing["entities"]
-    loc1 = ""
-    loc2 = ""
+    toLoc = ""
+    fromLoc = ""
+    mode = "driving"
     for entities in testbla:
         if entities["type"] == "LOCATION":
-            if loc1 == "":
-                loc1 = entities["name"]
-            elif loc2 == "":
-                loc2 = entities["name"]
-    print (loc1)
-    print(loc2)
-    return [loc1, loc2]
+            index = int(entities["mentions"][0]["text"]["beginOffset"])
+            reference = incoming_text[index - 3:index]
+            if reference == "to ":
+                toLoc = entities["name"]
+            else:
+                fromLoc = entities["name"]
+        elif entities["type"] == "OTHER":
+            if entities["name"] == "driving" or entities["name"] == "drive":
+                mode = "driving"
+            if entities["name"] == "walking" or entities["name"] == "walk":
+                mode = "walking"
+            if entities["name"] == "bicycling" or entities["name"] == "bike":
+                mode = "bicycling"
+            if entities["name"] == "transit":
+                mode = "transit"
 
-def parse_directions(loc1, loc2):
-    r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + loc1 + "&destination=" + loc2 + "&key=" + google_api_key)
+    return {toLoc: toLoc, fromLoc: fromLoc, mode: mode}
+
+def parse_directions(toLoc, fromLoc, mode):
+    r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
     testing = json.loads(r.text)
 
     something = testing["routes"]
