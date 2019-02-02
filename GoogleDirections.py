@@ -2,9 +2,10 @@ import requests
 import json
 
 
-from inner_functions import get_locations, check_location, google_api_key
+from inner_functions import check_location, google_api_key
 
 incoming_text = "I am in Kingston, ON and want to drive to toronto."
+
 
 api_key = "AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
 dataa = {"document": {
