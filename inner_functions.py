@@ -63,14 +63,14 @@ class directionsClass:
     time = ''
     steps = ''
 
+class geoClass:
+    location=''
+    geo=''
+
 class locationsClass:
     fromLoc = geoClass()
     toLoc = geoClass()
     mode = ''
-
-class geoClass:
-    location=''
-    geo=''
 
 def autocomplete_location(location):
     r = requests.get(
