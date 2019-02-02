@@ -11,9 +11,9 @@ def check_location(location):
     testing = json.loads(r.text)
     candidates = testing["candidates"]
 
-    if(len(candidates) < 1):
+    if(testing["status"] == "ZERO_RESULTS"):
         autoAddress = autocomplete_location(location)
-        print("Did you mean to type " + autoAddress + "?")
+        print("Did you mean to typeasd " + autoAddress + "?")
         questionAddress = autoAddress
     else:
         for place in candidates:
