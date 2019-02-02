@@ -36,7 +36,7 @@ def get_locations(incoming_text):
 
 def parse_directions(fromLoc, toLoc, mode):
 
-    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
+    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key +"&region=ca")
 
     unparsed=response.json()
 
@@ -54,7 +54,7 @@ def parse_directions(fromLoc, toLoc, mode):
 
 def autocomplete_location(location):
     r = requests.get(
-        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + google_api_key + "&input=" + location);
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + google_api_key + "&input=" + location+"&region=ca")
     testing = json.loads(r.text)
     if (testing['status'] == 'ZERO_RESULTS'):
         return ''
@@ -63,7 +63,7 @@ def autocomplete_location(location):
 
 def check_location(location):
     r = requests.get(
-        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery");
+        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery"+"&region=ca")
     testing = json.loads(r.text)
     candidates = testing["candidates"]
 
