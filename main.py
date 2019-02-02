@@ -25,11 +25,14 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
+    resp = MessagingResponse()
     locations = get_locations(body)
+    if locations == 0:
+        resp.message("STOP BEING DUMB")
+        return str(resp)
     steps = parse_directions(locations[0], locations[1], locations[2])
 
     send_direction(steps, from_num, to_num)
-    resp = MessagingResponse()
     resp.message("Done")
 
     return str(resp)
@@ -79,9 +82,13 @@ def get_locations(incoming_text):
             if entities["name"] == "transit":
                 mode = "transit"
 
+    if len(fromLoc) <= 1 and len(toLoc) <= 1:
+        return 0
+
     return [fromLoc, toLoc, mode ]
 
 def parse_directions(fromLoc, toLoc, mode):
+
     r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
     testing = json.loads(r.text)
 
