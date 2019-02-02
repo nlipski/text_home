@@ -2,6 +2,7 @@ from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, session
 import googlemaps
+import json
 from datetime import datetime
 
 
@@ -24,17 +25,27 @@ def sms_reply():
     resp = MessagingResponse()
 
     now = datetime.now()
-    directions_result = gmaps.directions("Sydney Town Hall",
-                                         "Parramatta, NSW",
-                                         mode="transit",
-                                         departure_time=now)
-    print (directions_result)
+
+    directions = get_directions("Sydney Town Hall", "Parramatta, NSW", "transit")
+
     if body != "I'm lost":
         resp_body = "Hmmm didn't get it"
 
-    resp.message(resp_body)
+    print(json.dumps(directions))
+    resp.message("FUCK YOU CONOR")
 
     return str(resp)
+
+def get_directions(loc_from, loc_to, transport):
+    directions = []
+
+    now = datetime.now()
+    directions_result = gmaps.directions(loc_from,
+                                         loc_to,
+                                         mode=transport,
+                                         departure_time=now)
+
+    return directions_result
 
 
 if __name__ == "__main__":
