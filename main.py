@@ -123,6 +123,21 @@ def parse_directions(fromLoc, toLoc, mode):
 
     return returntext
 
+def check_location(location):
+    r = requests.get(
+        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + api_key + "&input=" + location + "&inputtype=textquery");
+    testing = json.loads(r.text)
+    candidates = testing["candidates"]
+
+    for place in candidates:
+        r = requests.get(
+            "https://maps.googleapis.com/maps/api/place/details/json?key=" + api_key + "&placeid=" + place["place_id"])
+        ploop = json.loads(r.text)
+        questionAddress = ploop["result"]["formatted_address"]
+        print("Did you mean " + questionAddress + "?")
+
+    return questionAddress
+
 
 if __name__ == "__main__":
     app.run(debug=True)
