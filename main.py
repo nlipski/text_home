@@ -184,13 +184,6 @@ def sms_reply():
     print('Mode: ' + locations.mode)
     return ''
 
-def cleanup_message(step):
-    step.replace("<b>","")
-    step.replace("</b>", "")
-    step.replace("<div>", "")
-    step.replace("</div>","")
-    return step
-
 
 def send_direction(steps, from_num, to_num):
         message = client.messages.create(to=to_num, from_=from_num,
