@@ -51,8 +51,7 @@ def parse_directions(locations):
     stepNum = 1
     for step in unparsed["routes"][0]["legs"][0]["steps"]:
         direction = step["html_instructions"].replace('<b>','').replace('</b>','')
-        notag = re.sub("<.*?>", " ", direction)
-        print (notag)
+        direction = re.sub("<.*?>", " ", direction)
         directions.steps += str(stepNum) + '. ' + direction + '\n'
         stepNum += 1
 
