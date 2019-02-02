@@ -1,0 +1,4 @@
+Flask==0.12.1
+twilio==6.23
+googlemaps==3.0.2
+gunicorn==19.6.0

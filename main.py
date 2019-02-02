@@ -19,6 +19,9 @@ client = Client(account, token)
 
 defaultLocations = json.dumps({'locations':[]})
 
+@app.route("/", methods=['GET', 'POST'])
+def sample_replier():
+    print  ("SAMPLE")
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
@@ -26,6 +29,9 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
+    print(body)
+    print(to_num)
+    print(from_num)
     if body.lower() == 'clear session' or body.lower() == 'clear' or body.lower() == 'reset':
         clearConversationState()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
