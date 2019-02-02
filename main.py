@@ -33,18 +33,26 @@ def sms_reply():
     now = datetime.now()
     FMT = '%H:%M:%S'
     session['message_time'] = now.strftime(FMT)
-    timeDiff = now - datetime.strptime(lastTime, FMT)
-    maxDiff = now.replace(hour=0, minute=5, second=0, microsecond=0)
-    if timeDiff < maxDiff:
-        toLoc = session.get('to_location', '')
-        fromLoc = session.get('from_location', '')
-        mode = session.get('transport_mode', '')
-    else:
+    
+    if lastTime == '':
         toLoc = ''
         fromLoc = ''
         mode = ''
         session['state'] = 'new'
         state = 'new'
+    else:
+        timeDiff = now - datetime.strptime(lastTime, FMT)
+        maxDiff = now.replace(hour=0, minute=5, second=0, microsecond=0)
+        if timeDiff < maxDiff:
+            toLoc = session.get('to_location', '')
+            fromLoc = session.get('from_location', '')
+            mode = session.get('transport_mode', '')
+        else:
+            toLoc = ''
+            fromLoc = ''
+            mode = ''
+            session['state'] = 'new'
+            state = 'new'
 
     locations = get_locations(body)
     if state == 'new':
