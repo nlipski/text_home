@@ -59,12 +59,8 @@ def cleanup_message(step):
 
 
 def send_direction(steps, from_num, to_num):
-    for step in steps:
-        line = "For " + step["distance"]["text"] + " " + 
-step["html_instructions"]
-        line = cleanup_message(line)
         message = client.messages.create(to=to_num, from_=from_num,
-                                         body=line)
+                                         body=steps)
 def get_directions(loc_from, loc_to, transport):
     directions = []
 
