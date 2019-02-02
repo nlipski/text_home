@@ -25,7 +25,7 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
-    if body.lower() == 'clear session':
+    if body.lower() == 'clear session' or body.lower() == 'clear':
         session['state'] = 'new'
         session['to_location'] = ''
         session['from_location'] = ''
@@ -184,13 +184,14 @@ def get_locations(incoming_text):
             else:
                 fromLoc = entities["name"]
         elif entities["type"] == "OTHER":
+            print(entities["name"])
             if entities["name"] == "driving" or entities["name"] == "drive":
                 mode = "driving"
             if entities["name"] == "walking" or entities["name"] == "walk":
                 mode = "walking"
             if entities["name"] == "bicycling" or entities["name"] == "bike":
                 mode = "bicycling"
-            if entities["name"] == "transit":
+            if entities["name"] == "transit" or entities["name"] == "train" or entities["name"] == "bus":
                 mode = "transit"
 
     return [fromLoc, toLoc, mode]
