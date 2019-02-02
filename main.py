@@ -2,10 +2,10 @@ from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, session
 import googlemaps
-from inner_functions import get_locations, check_location, google_api_key, parse_directions, locationsClass
+from inner_functions import get_locations, check_location, parse_directions, locationsClass
 from default_classes import storedLocationClass
 from state_functions import defaultLocations, setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, checkConfirm
-from tokens import client
+from tokens import client, GOOGLE_API_KEY
 import datetime
 import json
 
