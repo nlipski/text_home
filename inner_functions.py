@@ -22,7 +22,7 @@ def get_locations(incoming_text):
             else:
                 fromLoc = entities["name"]
         elif entities["type"] == "OTHER":
-            print(entities["name"])
+            #print(entities["name"])
             if entities["name"] == "driving" or entities["name"] == "drive":
                 mode = "driving"
             if entities["name"] == "walking" or entities["name"] == "walk":
@@ -80,7 +80,7 @@ def check_location(location):
     r = requests.get(
         "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery"+"&region=ca"+"&fields=geometry,formatted_address,place_id")
     testing = json.loads(r.text)
-    print("this is testing geo",testing)
+    #print("this is testing geo",testing)
     candidates = testing["candidates"]
 
     questionAddress = ''
