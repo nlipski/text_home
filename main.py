@@ -8,8 +8,14 @@ from state_functions import defaultLocations, setLocation, getLocations, removeL
 from tokens import client, GOOGLE_API_KEY
 import datetime
 import json
+import os
 
+SECRET_KEY = os.environ['SECRET_KEY']
+GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
+TWILIO_ACCOUNT = os.environ['TWILIO_ACCOUNT']
+TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
 
+client = Client(TWILIO_ACCOUNT, TWILIO_TOKEN)
 
 app = Flask(__name__)
 app.config.from_object(__name__)
