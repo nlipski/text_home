@@ -1,7 +1,9 @@
 from twilio.rest import Client
+import os
 
-account = "ACd6f3f6f499dc943cbca7ee0ce16aff6e"
-token = "8377bf56ca922921e9b61547d951c018"
-client = Client(account, token)
+SECRET_KEY = os.environ['SECRET_KEY']
+GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
+TWILIO_ACCOUNT = os.environ['TWILIO_ACCOUNT']
+TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
 
-google_api_key = "AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
+client = Client(TWILIO_ACCOUNT, TWILIO_TOKEN)
