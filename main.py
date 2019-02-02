@@ -4,7 +4,7 @@ from flask import Flask, request, session
 import googlemaps
 import json
 import requests
-from datetime import datetime
+import datetime
 
 SECRET_KEY = 'a secret key'
 app = Flask(__name__)
@@ -14,8 +14,8 @@ google_api_key="AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
 
 gmaps = googlemaps.Client(key=google_api_key)
 
-account = "AC07e3abdcc5ca8ab68816022080fb9331"
-token = "e50d782ec9b8c284db8ab0f537ed0fbc"
+account = "ACd6f3f6f499dc943cbca7ee0ce16aff6e"
+token = "8377bf56ca922921e9b61547d951c018"
 client = Client(account, token)
 
 
@@ -25,15 +25,14 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
-    counter = session.get('counter', 0)
-    counter += 1
-
     state = session.get('state', 'new')
+    print('initial state: ' + state)
     lastTime = session.get('message_time', '')
-    now = datetime.now()
-    FMT = '%H:%M:%S'
+    now = datetime.datetime.now()
+    FMT = '%d-%m-%Y_%H:%M:%S'
     session['message_time'] = now.strftime(FMT)
-    
+    print(now.strftime(FMT))
+
     if lastTime == '':
         toLoc = ''
         fromLoc = ''
@@ -41,9 +40,9 @@ def sms_reply():
         session['state'] = 'new'
         state = 'new'
     else:
-        timeDiff = now - datetime.strptime(lastTime, FMT)
-        maxDiff = now.replace(hour=0, minute=5, second=0, microsecond=0)
-        if timeDiff < maxDiff:
+        timeDiff = now - datetime.datetime.strptime(lastTime, FMT)
+        print("time diff: " + str(timeDiff))
+        if timeDiff < datetime.timedelta(minutes=5):
             toLoc = session.get('to_location', '')
             fromLoc = session.get('from_location', '')
             mode = session.get('transport_mode', '')
@@ -55,16 +54,26 @@ def sms_reply():
             state = 'new'
 
     locations = get_locations(body)
+    print(state)
     if state == 'new':
         fromLoc = locations[0]
         toLoc = locations[1]
         mode = locations[2]
     elif state == 'getTo':
         toLoc = locations[0]
+        session['to_location'] = toLoc
+        session['state'] = 'confirmTo'
+        print(toLoc)
     elif state == 'getFrom':
         fromLoc = locations[0]
+        session['from_location'] = fromLoc
+        session['state'] = 'confirmFrom'
+        print(fromLoc)
     elif state == 'getMode':
         mode = locations[2]
+        session['transport_mode'] = mode
+        session['state'] = 'confirmMode'
+        print(mode)
     
     if toLoc == '':
         session['state'] = 'getTo'
@@ -82,16 +91,12 @@ def sms_reply():
         whereareyou = "Unfortunately we did not get how you want to get there. How do you want to do that?"
         client.messages.create(to=to_num, from_=from_num,body=whereareyou)
     else:
-        client.messages.create(to=to_num, from_=from_num,body="STOP BEING DUMB")
-
-    steps = parse_directions(locations[0], locations[1], locations[2])
-
-    send_direction(steps, from_num, to_num)
-
-    resp = MessagingResponse()
-    resp.message("Done")
-
-    return str(resp)
+        steps = parse_directions(locations[0], locations[1], locations[2])
+        send_direction(steps, from_num, to_num)
+        resp = MessagingResponse()
+        resp.message("Done")
+        return str(resp)
+    return ''
 
 def cleanup_message(step):
     step.replace("<b>","")
@@ -107,7 +112,7 @@ def send_direction(steps, from_num, to_num):
 def get_directions(loc_from, loc_to, transport):
     directions = []
 
-    now = datetime.now()
+    now = datetime.datetime.now()
     directions_result = gmaps.directions(loc_from,
                                          loc_to,
                                          mode=transport,
@@ -143,10 +148,7 @@ def get_locations(incoming_text):
             if entities["name"] == "transit":
                 mode = "transit"
 
-    if len(fromLoc) <= 1 and len(toLoc) <= 1:
-        return 0
-
-    return [fromLoc, toLoc, mode ]
+    return [fromLoc, toLoc, mode]
 
 def parse_directions(fromLoc, toLoc, mode):
 
