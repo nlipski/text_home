@@ -3,8 +3,8 @@ from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, google_api_key, parse_directions, locationsClass
-from default_messages import getHelp, checkConfirm, storedLocationClass
-from state_functions import setLocation, getTo, confirmTo, getFrom, confirmFrom, clearConversationState
+from default_classes import storedLocationClass
+from state_functions import defaultLocations, setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, checkConfirm
 from tokens import client
 import datetime
 import json
@@ -14,8 +14,6 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 gmaps = googlemaps.Client(key=google_api_key)
-
-defaultLocations = json.dumps({'locations':[]})
 
 @app.route("/", methods=['GET', 'POST'])
 def sample_replier():
@@ -27,37 +25,24 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
-    print(body)
-    print(to_num)
-    print(from_num)
+    #print(body)
+    #print(to_num)
+    #print(from_num)
     if body.lower() == 'clear session' or body.lower() == 'clear' or body.lower() == 'reset':
         clearConversationState()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
         return ''
     elif body.lower() == 'map-help':
-        client.messages.create(to=to_num, from_=from_num,body=getHelp())
+        getHelp(body, to_num, from_num)
         return ''
     elif body.lower().startswith('set-location'):
         setLocation(body, to_num, from_num)
         return ''
     elif body.lower() == 'get-locations':
-        locs = session.get('customLocations', '')
-        if locs == '' or locs == defaultLocations:
-            client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
-        else:
-            message = "Your stored locations are:\n"
-            customLocations = json.loads(locs)
-            for location in customLocations['locations']:
-                message += location['name'] + ': ' + location['location'] + '\n'
-            client.messages.create(to=to_num, from_=from_num,body=message)
+        getLocations(body, to_num, from_num)
         return ''
     elif body.lower() == 'remove-locations':
-        locs = session.get('customLocations', '')
-        if locs == '' or locs == defaultLocations:
-            client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
-        else:
-            session['customLocations'] = defaultLocations
-            client.messages.create(to=to_num, from_=from_num,body="Successfully removed stored locations.")
+        removeLocations(body, to_num, from_num)
         return ''
     else:
         state = session.get('state', 'new')
@@ -102,7 +87,8 @@ def sms_reply():
         elif state == 'getTo':
             locations.toLoc = getTo(body, to_num, from_num)
         elif state == 'getFrom':
-            locations.fromLoc = getFrom(body, to_num, from_num)
+            locations.fromLoc = getFrom(body, to_num, from_num
+            )
         elif state == 'confirmTo':
             if (confirmTo(body, to_num, from_num)):
                 confirmedTo = 1
@@ -153,22 +139,23 @@ def sms_reply():
         
         if checkLocations == 1:
             if locations.toLoc == '':
-                session['state'] = 'getTo'
-                wheretogo = "Okay, Where do you want to go?"
-                client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+                print('a')
+                setGetTo(body, to_num, from_num)
             elif confirmedTo == 0:
+                print('b')
                 confirmTo(body, to_num, from_num)
             elif locations.fromLoc == '':
-                session['state'] = 'getFrom'
-                whereareyou = "Okay, Where are you?"
-                client.messages.create(to=to_num, from_=from_num,body=whereareyou)
+                print('c')
+                setGetFrom(body, to_num, from_num)
             elif confirmedFrom  == 0:
+                print('d')
                 confirmFrom(body, to_num, from_num)
             else:
                 directions = parse_directions(locations)
                 routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
                 client.messages.create(to=to_num, from_=from_num,body=routinglocation)
-                client.messages.create(to=to_num, from_=from_num,body=directions.steps)
+                for step in directions.steps:
+                    client.messages.create(to=to_num, from_=from_num,body=step)
                 session['state'] = 'new'
                 session['to_location'] = ''
                 session['from_location'] = ''
@@ -179,6 +166,7 @@ def sms_reply():
                 client.messages.create(to=to_num, from_=from_num,body='Done!')
 
     print('Message: ' + body)
+    print('From Number: ' + from_num + ' To Number: ' + to_num)
     print('State: ' + state)
     print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
     print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))

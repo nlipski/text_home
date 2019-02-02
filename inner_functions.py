@@ -37,7 +37,7 @@ def get_locations(incoming_text):
             else:
                 fromLoc = entities["name"]
         elif entities["type"] == "OTHER":
-            print(entities["name"])
+            #print(entities["name"])
             if entities["name"] == "driving" or entities["name"] == "drive":
                 mode = "driving"
             if entities["name"] == "walking" or entities["name"] == "walk":
@@ -64,9 +64,16 @@ def parse_directions(locations):
     directions.to = unparsed["routes"][0]["legs"][0]["end_address"]
     directions.start = unparsed["routes"][0]["legs"][0]["start_address"]
     stepNum = 1
+    messageNum = 0
     for step in unparsed["routes"][0]["legs"][0]["steps"]:
         direction = step["html_instructions"].replace('<b>','').replace('</b>','')
-        directions.steps += str(stepNum) + '. ' + direction + '\n'
+        newStep = str(stepNum) + '. ' + direction + '\n'
+        if (len(directions.steps[messageNum]) + len(newStep)) < 1450:
+            directions.steps[messageNum] += newStep
+        else:
+            messageNum += 1
+            directions.steps.append('')
+            directions.steps[messageNum] += newStep
         stepNum += 1
 
     return directions
@@ -75,7 +82,7 @@ class directionsClass:
     start = ''
     end = ''
     time = ''
-    steps = ''
+    steps = ['']
 
 class locationsClass:
     fromLoc = ''
@@ -95,7 +102,7 @@ def check_location(location):
     r = requests.get(
         "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + google_api_key + "&input=" + location + "&inputtype=textquery"+"&region=ca"+"&fields=geometry,formatted_address,place_id")
     testing = json.loads(r.text)
-    print("this is testing geo", testing)
+    #print("this is testing geo", testing)
     candidates = testing["candidates"]
 
     questionAddress = ''
@@ -107,7 +114,7 @@ def check_location(location):
             r = requests.get(
                 "https://maps.googleapis.com/maps/api/place/details/json?key=" + google_api_key + "&placeid=" + place["place_id"])
             ploop = json.loads(r.text)
-            print(ploop)
+            #print(ploop)
             questionAddress = ploop["result"]["formatted_address"]
 
     return questionAddress

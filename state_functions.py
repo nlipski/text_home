@@ -1,7 +1,9 @@
 from flask import Flask, request, session
-from default_messages import checkConfirm
 from inner_functions import check_location
 from tokens import client
+import json
+
+defaultLocations = json.dumps({'locations':[]})
 
 def setLocation(body, to_num, from_num):
     clearConversationState()
@@ -17,6 +19,25 @@ def setLocation(body, to_num, from_num):
         session['state'] = 'setCustomLocation'
         session['locationVarName'] = var
 
+def getLocations(body, to_num, from_num):
+    locs = session.get('customLocations', defaultLocations)
+    if locs == defaultLocations:
+        client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
+    else:
+        message = "Your stored locations are:\n"
+        customLocations = json.loads(locs)
+        for location in customLocations['locations']:
+            message += location['name'] + ': ' + location['location'] + '\n'
+        client.messages.create(to=to_num, from_=from_num,body=message)
+
+def removeLocations(body, to_num, from_num):
+    locs = session.get('customLocations', defaultLocations)
+    if locs == defaultLocations:
+        client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
+    else:
+        session['customLocations'] = defaultLocations
+        client.messages.create(to=to_num, from_=from_num,body="Successfully removed stored locations.")
+
 def getTo(body, to_num, from_num):
     toLoc = check_location(body)
     session['to_location'] = toLoc
@@ -30,10 +51,12 @@ def confirmTo(body, to_num, from_num):
         session['confirmed_to'] = 1
         return True
     else:
-        session['state'] = 'getTo'
-        wheretogo = "Okay, where do you want to go?"
-        client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+        setGetTo(body, to_num, from_num)
         return False
+
+def setGetTo(body, to_num, from_num):
+    session['state'] = 'getTo'
+    client.messages.create(to=to_num, from_=from_num,body="Okay, where do you want to go?")
 
 def getFrom(body, to_num, from_num):
     fromLoc = check_location(body)
@@ -48,9 +71,22 @@ def confirmFrom(body, to_num, from_num):
         session['confirmed_from'] = 1
         return True
     else:
-        session['state'] = 'getTo'
-        wheretogo = "Okay, where do you want to go?"
-        client.messages.create(to=to_num, from_=from_num,body=wheretogo)
+        setGetFrom(body, to_num, from_num)
+        return False
+
+def setGetFrom(body, to_num, from_num):
+    session['state'] = 'getFrom'
+    client.messages.create(to=to_num, from_=from_num,body="Okay, where are you?")
+
+def getHelp(body, to_num, from_num):
+    client.messages.create(to=to_num, from_=from_num,body="Okay, where are you?")
+    return''
+
+def checkConfirm(message):
+    txt = message.lower()
+    if (txt == 'yes' or txt == 'y' or txt == 'ye' or txt == 'yea' or txt == 'oui' or txt == 'yup' or txt == 'yep'):
+        return True
+    else:
         return False
 
 def clearConversationState():
