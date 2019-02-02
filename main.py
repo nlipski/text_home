@@ -9,7 +9,9 @@ from datetime import datetime
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-gmaps = googlemaps.Client(key='AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE')
+google_api_key="AIzaSyBUlQyHBJsv-GBooA_64cyA_9q-abYSehE"
+
+gmaps = googlemaps.Client(key=google_api_key)
 
 account = "AC07e3abdcc5ca8ab68816022080fb9331"
 token = "e50d782ec9b8c284db8ab0f537ed0fbc"
@@ -18,21 +20,22 @@ client = Client(account, token)
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
-
-    resp_body="Sucks to suck"
-
     body = request.values.get('Body', None)
+    #directions = get_directions("Sydney Town Hall", "Parramatta, NSW", "transit")
+
+    locations = get_locations(body)
+    steps = parse_directions(locations.loc1, locations.loc2)
+
+    message = ""
+
+    for step in steps:
+        line = "For " + step["distance"]["text"] + " " + step["html_instructions"]
+        print(line)
+        message += " " + line
+
+
     resp = MessagingResponse()
-
-    now = datetime.now()
-
-    directions = get_directions("Sydney Town Hall", "Parramatta, NSW", "transit")
-
-    if body != "I'm lost":
-        resp_body = "Hmmm didn't get it"
-
-    print(json.dumps(directions))
-    resp.message("FUCK YOU CONOR")
+    resp.message(message)
 
     return str(resp)
 
@@ -46,6 +49,33 @@ def get_directions(loc_from, loc_to, transport):
                                          departure_time=now)
 
     return directions_result
+
+def get_locations(incoming_text):
+    data={"document":{"type":"PLAIN_TEXT","content":incoming_text},"encodingType":"UTF16"}
+
+    r=requests.post("https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=" + google_api_key, json=data)
+    testing = json.loads(r.text)
+    testbla = testing["entities"]
+    loc1 = ""
+    loc2 = ""
+    for entities in testbla:
+        if entities["type"] == "LOCATION":
+            if loc1 == "":
+                loc1 = entities["name"]
+            elif loc2 == "":
+                loc2 = entities["name"]
+
+    return {loc1: loc1, loc2: loc2}
+
+def parse_directions(loc1, loc2):
+    r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + loc1 + "&destination=" + loc2 + "&key=" + google_api_key)
+    testing = json.loads(r.text)
+
+    something = testing["routes"]
+    some = something[0]
+    steps = some["legs"][0]["steps"]
+
+    return steps
 
 
 if __name__ == "__main__":
