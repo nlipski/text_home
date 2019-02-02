@@ -38,9 +38,7 @@ def sms_reply():
     return str(resp)
 
 def send_direction(steps, from_num, to_num):
-    for step in steps:
-
-        line = "For " + step["distance"]["text"] + " " + step["html_instructions"]
+        line = steps
         message = client.messages.create(to=to_num, from_=from_num,
                                          body=line)
 def get_directions(loc_from, loc_to, transport):
@@ -89,14 +87,21 @@ def get_locations(incoming_text):
 
 def parse_directions(fromLoc, toLoc, mode):
 
-    r=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
-    testing = json.loads(r.text)
+    response=requests.get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLoc + "&destination=" + toLoc + "&mode=" + mode + "&key=" + google_api_key)
 
-    something = testing["routes"]
-    some = something[0]
-    steps = some["legs"][0]["steps"]
+    unparsed=response.json()
 
-    return steps
+    time = unparsed["routes"][0]["legs"][0]["duration"]["text"]
+    to =unparsed["routes"][0]["legs"][0]["end_address"]
+    start =unparsed["routes"][0]["legs"][0]["start_address"]
+    directions = []
+    for step in unparsed["routes"][0]["legs"][0]["steps"]: 
+        direction = step["html_instructions"].replace('<b>','').replace('</b>','')
+        directions.append(direction)
+    returntext= "Here are your instructions from",(start),"to" ,(to), ". It will take",(time),  (directions)
+
+
+    return returntext
 
 
 if __name__ == "__main__":
