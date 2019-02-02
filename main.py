@@ -31,7 +31,7 @@ def sms_reply():
     # Save the new counter value in the session
     session['counter'] = counter
 
-    client.messages.create(to_num, from_num, "You have messaged " + counter + " times.")
+    client.messages.create(to_num, from_num, str("You have messaged " + counter + " times."))
 
     resp = MessagingResponse()
     locations = get_locations(body)
