@@ -2,3 +2,4 @@
 *.xml
 .idea/qhacks_2019.iml
 ngrok
+*.pyc
