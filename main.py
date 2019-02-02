@@ -6,7 +6,7 @@ import json
 import requests
 from datetime import datetime
 
-
+SECRET_KEY = 'a secret key'
 app = Flask(__name__)
 app.config.from_object(__name__)
 
@@ -25,6 +25,19 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
+    counter = session.get('counter', 0)
+    counter += 1
+
+    # Save the new counter value in the session
+    session['counter'] = counter
+
+    if counter >= 0:
+        resp = MessagingResponse()
+        message = "You have messaged " + str(counter) + " times."
+        print (message)
+        resp.message = message
+        return str(resp)
+
     resp = MessagingResponse()
     locations = get_locations(body)
     if locations == 0:
@@ -37,8 +50,19 @@ def sms_reply():
 
     return str(resp)
 
+def cleanup_message(step):
+    step.replace("<b>","")
+    step.replace("</b>", "")
+    step.replace("<div>", "")
+    step.replace("</div>","")
+    return step
+
+
 def send_direction(steps, from_num, to_num):
-        line = steps
+    for step in steps:
+        line = "For " + step["distance"]["text"] + " " + 
+step["html_instructions"]
+        line = cleanup_message(line)
         message = client.messages.create(to=to_num, from_=from_num,
                                          body=line)
 def get_directions(loc_from, loc_to, transport):
