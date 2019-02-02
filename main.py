@@ -22,9 +22,13 @@ app.config.from_object(__name__)
 
 gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
 
-@app.route("/", methods=['GET', 'POST'])
-def sample_replier():
-    print  ("SAMPLE")
+def html_tag_remover(line):
+    strart =-1
+    end = -1
+    while (line.find('<') != -1 and  line.find('>') != -1):
+        line= line[:line.find('<')] + line[line.find('>')+1:]
+    return line
+
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
