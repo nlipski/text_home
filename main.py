@@ -35,9 +35,8 @@ def sms_reply():
         # Use the message SID as a filename.
         image_url = ""
         filename = request.values['MessageSid'] + '.png'
-        with open('{}/{}'.format(DOWNLOAD_DIRECTORY, filename), 'wb') as f:
-            image_url = request.values['MediaUrl0']
-            print (image_url)
+        print(filename)
+
 
     print('\n\n------------------START-------------------------')
     print('Message: ' + body)
