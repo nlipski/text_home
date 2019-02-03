@@ -4,7 +4,7 @@ from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, parse_directions, locationsClass,parse_image
 from default_classes import storedLocationClass, defaultCustomLocations
-from state_functions import setLocation, setCustomLocationName, setCustomLocationLocation, confirmCustomLocation, getLocations, getMode, confirmMode, setGetMode, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendLocationHelp, sendThanks, checkConfirm
+from state_functions import setLocation, setCustomLocationName, setCustomLocationLocation, confirmCustomLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendLocationHelp, sendThanks, checkConfirm
 from tokens import client, GOOGLE_API_KEY, SECRET_KEY
 import datetime
 import json
@@ -90,7 +90,6 @@ def sms_reply():
 
         confirmedTo = session.get('confirmed_to', 0)
         confirmedFrom = session.get('confirmed_from', 0)
-        confirmedMode = session.get('confirmed_mode', 0)
 
         locations = locationsClass()
 
@@ -114,7 +113,6 @@ def sms_reply():
                 state = 'new'
                 confirmedTo = 0
                 confirmedFrom = 0
-                confirmedMode = 0
 
         checkLocations = 0
         if state == 'new':
@@ -128,8 +126,6 @@ def sms_reply():
             locations.toLoc = getTo(body, to_num, from_num)
         elif state == 'getFrom':
             locations.fromLoc = getFrom(body, to_num, from_num)
-        elif state == 'getMode':
-            locations.mode = getMode(body, to_num, from_num)
         elif state == 'confirmTo':
             if (confirmTo(body, to_num, from_num)):
                 confirmedTo = 1
@@ -138,9 +134,6 @@ def sms_reply():
             if (confirmFrom(body, to_num, from_num)):
                 confirmedFrom = 1
                 checkLocations = 1
-        elif state == 'confirmMode':
-            if (confirmMode(body, to_num, from_num)):
-                confirmedMode = 1
         elif state == 'setCustomLocationName':
             setCustomLocationName(body, to_num, from_num)
             return ''
@@ -168,12 +161,6 @@ def sms_reply():
                 session['state'] = 'confirmFrom'
                 confirmfrom = "Please confirm this is where you are coming from: " + locations.fromLoc
                 client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
-            elif locations.mode == '':
-                setGetMode(body, to_num, from_num)
-            elif confirmedMode.mode == 0:
-                session['state'] = 'confirmFrom'
-                confirmmode = "Please confirm this is your mode of transportation: " + locations.mode
-                client.messages.create(to=to_num, from_=from_num,body=confirmmode)
             else:
                 directions = parse_directions(locations)
                 routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
@@ -187,7 +174,6 @@ def sms_reply():
                 session['message_time'] = ''
                 session['confirmed_to'] = 0
                 session['confirmed_from'] = 0
-                session['confirmed_mode'] = 0
                 client.messages.create(to=to_num, from_=from_num,body='Done!')
 
         print('\n\n------------------END-------------------------')

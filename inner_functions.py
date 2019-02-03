@@ -63,7 +63,14 @@ def get_locations(incoming_text):
             else:
                 fromLoc = entities["name"]
         elif entities["type"] == "OTHER":
-            mode = getModeType(entities["name"])
+            if entities["name"] == "driving" or entities["name"] == "drive":
+                mode = "driving"
+            if entities["name"] == "walking" or entities["name"] == "walk":
+                mode = "walking"
+            if entities["name"] == "bicycling" or entities["name"] == "bike":
+                mode = "bicycling"
+            if entities["name"] == "transit" or entities["name"] == "train" or entities["name"] == "bus":
+                mode = "transit"
 
     locations = locationsClass()
     if fromLoc != '':
@@ -78,18 +85,6 @@ def get_locations(incoming_text):
 
     locations.mode = mode
     return locations
-
-def getModeType(initialMode):
-    mode = ''
-    if initialMode == "driving" or initialMode == "drive":
-        mode = "driving"
-    if initialMode == "walking" or initialMode == "walk":
-        mode = "walking"
-    if initialMode == "bicycling" or initialMode == "bike":
-        mode = "bicycling"
-    if initialMode == "transit" or initialMode == "train" or initialMode == "bus":
-        mode = "transit"
-    return mode
 
 def parse_directions(locations):
 

@@ -1,5 +1,5 @@
 from flask import Flask, request, session
-from inner_functions import check_location, checkgeo_location, checkcustom_location, getModeType
+from inner_functions import check_location, checkgeo_location, checkcustom_location
 from tokens import client
 import json
 from default_classes import defaultCustomLocations
@@ -154,32 +154,6 @@ def setGetFrom(body, to_num, from_num):
     client.messages.create(to=to_num, from_=from_num,body="Okay, where are you?")
     return ''
 
-def getMode(body, to_num, from_num):
-    mode = getModeType(body.lower())
-    if mode != '':
-        session['transport_mode'] = mode
-        session['state'] = 'confirmMode'
-        confirmmode = "Please confirm this is your mode of transportation: " + mode
-        client.messages.create(to=to_num, from_=from_num,body=confirmmode)
-        return mode
-    else:
-        client.messages.create(to=to_num, from_=from_num, body="Sorry, please check that is an actual way to travel.")
-        setGetMode(body, to_num, from_num)
-    return ''
-
-def confirmMode(body, to_num, from_num):
-    if (checkConfirm(body)):
-        session['confirmed_mode'] = 1
-        return True
-    else:
-        setGetMode(body, to_num, from_num)
-        return False
-
-def setGetMode(body, to_num, from_num):
-    session['state'] = 'getMode'
-    client.messages.create(to=to_num, from_=from_num,body="Okay, how do you want to get there?")
-    return ''
-
 def getHelp(body, to_num, from_num):
     helpMsg = 'Tell TextHome where you want to go and additional prompts will help you through the process.\n\n'
     helpMsg += 'If you don\'t know your current location you can ask "Where Am I" to TextHome\n\n'
@@ -214,5 +188,4 @@ def clearConversationState():
     session['transport_mode'] = ''
     session['confirmed_to'] = 0
     session['confirmed_from'] = 0
-    session['confirmed_mode'] = 0
     return ''
