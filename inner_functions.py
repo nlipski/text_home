@@ -86,8 +86,6 @@ class directionsClass:
 
 class locationsClass:
     fromLoc = ''
-    lat = ''
-    lng = ''
     toLoc = ''
     mode = ''
 
@@ -110,8 +108,6 @@ def check_location(location):
     print(r.text)
 
     questionAddress = ''
-    lat = ''
-    lng = ''
     if(testing["status"] == "ZERO_RESULTS"):
         questionAddress = autocomplete_location(location)
     else:
