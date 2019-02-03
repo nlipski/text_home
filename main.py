@@ -93,7 +93,7 @@ def sms_reply():
             locations.toLoc = ''
             locations.fromLoc = ''
             locations.mode = ''
-            state = 'new'
+            state = ''
         else:
             timeDiff = now - datetime.datetime.strptime(lastTime, FMT)
             if timeDiff < datetime.timedelta(minutes=5):
@@ -105,7 +105,7 @@ def sms_reply():
                 locations.toLoc = ''
                 locations.fromLoc = ''
                 locations.mode = ''
-                state = 'new'
+                state = ''
                 confirmedTo = 0
                 confirmedFrom = 0
 
