@@ -65,6 +65,7 @@ def sms_reply():
         sendThanks(body, to_num, from_num)
         return ''
     elif body.lower().startswith('set-location'):
+        session['state'] = 'setLocation'
         clearConversationState()
         setLocation(body, to_num, from_num)
         return ''
@@ -78,6 +79,7 @@ def sms_reply():
         return ''
     else:
         state = session.get('state', '')
+        print('stateystate: ' + state)
         lastTime = session.get('message_time', '')
         now = datetime.datetime.now()
         FMT = '%d-%m-%Y_%H:%M:%S'
