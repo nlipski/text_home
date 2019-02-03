@@ -98,8 +98,6 @@ def parse_directions(locations):
     unparsed=response.json()
 
     directions = directionsClass()
-    if not("routes" in unparsed):
-        return directions
     directions.time = unparsed["routes"][0]["legs"][0]["duration"]["text"]
     directions.to = unparsed["routes"][0]["legs"][0]["end_address"]
     directions.start = unparsed["routes"][0]["legs"][0]["start_address"]
