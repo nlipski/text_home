@@ -2,6 +2,7 @@ import requests
 import json
 import re 
 from tokens import GOOGLE_API_KEY
+from flask import Flask, request, session
 
 def get_locations(incoming_text):
     data={"document":{"type":"PLAIN_TEXT","content":incoming_text},"encodingType":"UTF16"}
@@ -34,12 +35,23 @@ def get_locations(incoming_text):
 
     locations = locationsClass()
     if fromLoc != '':
-        locations.fromLoc = check_location(fromLoc)
+        newFromLoc = fromLoc
+        locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
+        print (json.dumps(locs))
+        for loc in locs:
+            if loc['name'] == fromLoc:
+                newFromLoc = loc['location']
+        locations.fromLoc = check_location(newFromLoc)
     else:
         locations.fromLoc = ''
 
     if toLoc != '':
-        locations.toLoc = check_location(toLoc)
+        newToLoc = toLoc
+        locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
+        for loc in locs:
+            if loc['name'] == toLoc:
+                newFromLoc = loc['location']
+        locations.toLoc = check_location(newToLoc)
     else:
         locations.toLoc = ''
 

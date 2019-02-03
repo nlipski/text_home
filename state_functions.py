@@ -39,11 +39,19 @@ def removeLocations(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body="Successfully removed stored locations.")
 
 def getTo(body, to_num, from_num):
-    toLoc = check_location(body)
+    toLoc = ''
+    locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
+    for loc in locs:
+        if loc['name'] == body:
+            toLoc = loc['location']
+            session['state'] = 'continue'
+            session['confirmed_to'] = 1
+    if toLoc == '':
+        toLoc = check_location(body)
+        session['state'] = 'confirmTo'
+        confirmto = "Please confirm this is your destination: " + toLoc
+        client.messages.create(to=to_num, from_=from_num,body=confirmto)
     session['to_location'] = toLoc
-    session['state'] = 'confirmTo'
-    confirmto = "Please confirm this is your destination: " + toLoc
-    client.messages.create(to=to_num, from_=from_num,body=confirmto)
     return toLoc
 
 def confirmTo(body, to_num, from_num):
@@ -59,11 +67,19 @@ def setGetTo(body, to_num, from_num):
     client.messages.create(to=to_num, from_=from_num,body="Okay, where do you want to go?")
 
 def getFrom(body, to_num, from_num):
-    fromLoc = check_location(body)
+    fromLoc = ''
+    locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
+    for loc in locs:
+        if loc['name'] == body:
+            fromLoc = loc['location']
+            session['state'] = 'continue'
+            session['confirmed_to'] = 1
+    if fromLoc == '':
+        fromLoc = check_location(body)
+        session['state'] = 'confirmFrom'
+        confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
+        client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
     session['from_location'] = fromLoc
-    session['state'] = 'confirmFrom'
-    confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
-    client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
     return fromLoc
 
 def confirmFrom(body, to_num, from_num):

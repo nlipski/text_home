@@ -42,9 +42,11 @@ def sms_reply():
         getHelp(body, to_num, from_num)
         return ''
     elif body.lower().startswith('set-location'):
+        print('set-locs' + body)
         setLocation(body, to_num, from_num)
         return ''
     elif body.lower() == 'get-locations':
+        print('get-locs')
         getLocations(body, to_num, from_num)
         return ''
     elif body.lower() == 'remove-locations':
@@ -113,10 +115,12 @@ def sms_reply():
                 confirmedFrom = 1
                 checkLocations = 1
         elif state == 'setCustomLocationName':
+            print(state)
             client.messages.create(to=to_num, from_=from_num,body='What is location of "' + body.lower() + '"?')
             session['state'] = 'setCustomLocation'
             session['locationVarName'] = body.lower()
         elif state == 'setCustomLocation':
+            print(state)
             var = session.get('locationVarName', '')
             loc = check_location(body)
             print('jsgdfgsfkjhgasljhdfglajhsgfdjlhsagdfjagsdkjhfgaskjhdfgjhasd')
@@ -133,6 +137,7 @@ def sms_reply():
                 client.messages.create(to=to_num, from_=from_num,body='Error creating custom location. Please try again.')
             return ''
         elif state == 'confirmCustomLocation':
+            print(state)
             var = session.get('locationVarName', '')
             loc = session.get('locationVarLocation', '')
             if var != '' and loc != '' and checkConfirm(body):
