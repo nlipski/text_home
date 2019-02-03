@@ -37,7 +37,7 @@ def sms_reply():
         filename = request.values['MessageSid'] + '.png'
         image_url = request.form['MediaUrl0']
         print(filename)
-        print(str(image_url))
+        parse_image(str(image_url))
 
 
     print('\n\n------------------START-------------------------')
