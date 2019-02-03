@@ -4,7 +4,7 @@ from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, parse_directions, locationsClass
 from default_classes import storedLocationClass, defaultCustomLocations
-from state_functions import setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendThanks, checkConfirm
+from state_functions import setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendLocationHelp, sendThanks, checkConfirm
 from tokens import client, GOOGLE_API_KEY, SECRET_KEY
 import datetime
 import json
