@@ -135,13 +135,13 @@ def sms_reply():
                 confirmedFrom = 1
                 checkLocations = 1
         elif state == 'setCustomLocationName':
-            setCustomLocationName(body, to_num, from_num)
+            session['state'] = setCustomLocationName(body, to_num, from_num)
             return ''
         elif state == 'setCustomLocationLocation':
-            setCustomLocationLocation(body, to_num, from_num)
+            session['state'] = setCustomLocationLocation(body, to_num, from_num)
             return ''
         elif state == 'confirmCustomLocation':
-            confirmCustomLocation(body, to_num, from_num)
+            session['state'] = confirmCustomLocation(body, to_num, from_num)
             return ''
         else:
             checkLocations = 1
