@@ -84,11 +84,9 @@ def getLocations(body, to_num, from_num):
         return ''
     else:
         message = "Your stored locations are:\n"
-        print(locs)
         customLocations = json.loads(locs)
         for location in customLocations['locations']:
-            print("asdfghjkljhgfdsfghjkljhgf" + json.dumps(location))
-            message += 'kk'#ocation['name'] + ': ' + location['location'] + '\n'
+            message += location['name'] + ': ' + location['location'] + '\n'
         client.messages.create(to=to_num, from_=from_num,body=message)
     return ''
 
