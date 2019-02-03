@@ -30,13 +30,14 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
     print(request.values.get('subresource_uris', None))
-    if int(request.POST.get('NumMedia', 0)) != '0':
-        num_media = int(request.POST.get('NumMedia', 0))
 
-        media_files = [(request.POST.get("MediaUrl{}".format(i), ''),
-                        request.POST.get("MediaContentType{}".format(i), ''))
-                       for i in range(0, num_media)]
-        print(media_files)
+    if request.values['NumMedia'] != '0':
+        # Use the message SID as a filename.
+        image_url = ""
+        filename = request.values['MessageSid'] + '.png'
+        with open('{}/{}'.format(DOWNLOAD_DIRECTORY, filename), 'wb') as f:
+            image_url = request.values['MediaUrl0']
+            print (image_url)
 
     print('\n\n------------------START-------------------------')
     print('Message: ' + body)
