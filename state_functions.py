@@ -7,7 +7,7 @@ from default_classes import defaultCustomLocations
 def setLocation(body, to_num, from_num):
     params = body.lower().split(' ')
     if len(params) > 2:
-        client.messages.create(to=to_num, from_=from_num,body='Oops! Locations must only be 1 word.')
+        client.messages.create(to=to_num, from_=from_num,body='Oops! Location names must only be 1 word.')
         session['state'] = 'error'
     elif len (params) == 1:
         client.messages.create(to=to_num, from_=from_num,body='What is the name of the location?')
@@ -17,11 +17,18 @@ def setLocation(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body='What is location of "' + var + '"?')
         session['state'] = 'setCustomLocationLocation'
         session['locationVarName'] = var
+    return ''
 
 def setCustomLocationName(body, to_num, from_num):
-    session['state'] = 'setCustomLocationLocation'
-    session['locationVarName'] = body.lower()
-    client.messages.create(to=to_num, from_=from_num,body='What is location of "' + body.lower() + '"?')
+    params = body.lower().split(' ')
+    if len(params) > 1:
+        client.messages.create(to=to_num, from_=from_num,body='Oops! Location names must only be 1 word.')
+        session['state'] = 'error'
+    else:
+        session['state'] = 'setCustomLocationLocation'
+        session['locationVarName'] = body.lower()
+        client.messages.create(to=to_num, from_=from_num,body='What is location of "' + body.lower() + '"?')
+    return ''
 
 def setCustomLocationLocation(body, to_num, from_num):
     var = session.get('locationVarName', '')
@@ -36,6 +43,7 @@ def setCustomLocationLocation(body, to_num, from_num):
         session['locationVarLocation'] = ''
         session['state'] = 'error'
         client.messages.create(to=to_num, from_=from_num,body='Error creating custom location. Please try again.')
+    return ''
 
 def confirmCustomLocation(body, to_num, from_num):
     var = session.get('locationVarName', '')
@@ -61,6 +69,7 @@ def confirmCustomLocation(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body='Okay, What is location of "' + var + '"?')
         session['state'] = 'getCustomLocation'
         session['locationVarLocation'] = ''
+    return ''
 
 def getLocations(body, to_num, from_num):
     locs = session.get('customLocations', defaultCustomLocations)
@@ -72,6 +81,7 @@ def getLocations(body, to_num, from_num):
         for location in customLocations['locations']:
             message += location['name'] + ': ' + location['location'] + '\n'
         client.messages.create(to=to_num, from_=from_num,body=message)
+    return ''
 
 def removeLocations(body, to_num, from_num):
     locs = session.get('customLocations', defaultCustomLocations)
@@ -80,6 +90,7 @@ def removeLocations(body, to_num, from_num):
     else:
         session['customLocations'] = defaultCustomLocations
         client.messages.create(to=to_num, from_=from_num,body="Successfully removed stored locations.")
+    return ''
 
 def getTo(body, to_num, from_num):
     toLoc = checkcustom_location(body)
@@ -93,6 +104,7 @@ def getTo(body, to_num, from_num):
     else:
         client.messages.create(to=to_num, from_=from_num, body="Sorry, please check that your location exists on planet earth.")
         setGetTo(body, to_num, from_num)
+    return ''
 
 def confirmTo(body, to_num, from_num):
     if (checkConfirm(body)):
@@ -105,6 +117,7 @@ def confirmTo(body, to_num, from_num):
 def setGetTo(body, to_num, from_num):
     session['state'] = 'getTo'
     client.messages.create(to=to_num, from_=from_num,body="Okay, where do you want to go?")
+    return ''
 
 def getFrom(body, to_num, from_num):
     fromLoc = checkcustom_location(body)
@@ -119,6 +132,7 @@ def getFrom(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,
                                body="Sorry, please check that your location exists on planet earth.")
         setGetFrom(body, to_num, from_num)
+    return ''
 
 def confirmFrom(body, to_num, from_num):
     if (checkConfirm(body)):
@@ -131,6 +145,7 @@ def confirmFrom(body, to_num, from_num):
 def setGetFrom(body, to_num, from_num):
     session['state'] = 'getFrom'
     client.messages.create(to=to_num, from_=from_num,body="Okay, where are you?")
+    return ''
 
 def getHelp(body, to_num, from_num):
     helpMsg = 'Tell TextHome where you want to go and additional prompts will help you through the process.\n\n'
@@ -166,3 +181,4 @@ def clearConversationState():
     session['transport_mode'] = ''
     session['confirmed_to'] = 0
     session['confirmed_from'] = 0
+    return ''

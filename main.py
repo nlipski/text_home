@@ -112,8 +112,7 @@ def sms_reply():
         elif state == 'getTo':
             locations.toLoc = getTo(body, to_num, from_num)
         elif state == 'getFrom':
-            locations.fromLoc = getFrom(body, to_num, from_num
-            )
+            locations.fromLoc = getFrom(body, to_num, from_num)
         elif state == 'confirmTo':
             if (confirmTo(body, to_num, from_num)):
                 confirmedTo = 1
