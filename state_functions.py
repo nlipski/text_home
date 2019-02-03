@@ -6,12 +6,17 @@ from default_classes import defaultCustomLocations
 
 def setLocation(body, to_num, from_num):
     params = body.lower().split(' ')
-    if len(params) > 1:
-        client.messages.create(to=to_num, from_=from_num,body='Oops! Try again')
+    if len(params) > 2:
+        client.messages.create(to=to_num, from_=from_num,body='Oops! Location names must only be 1 word.')
         session['state'] = 'error'
     elif len (params) == 1:
         client.messages.create(to=to_num, from_=from_num,body='What is the name of the location?')
         session['state'] = 'setCustomLocationName'
+    else:
+        var = params[1]
+        client.messages.create(to=to_num, from_=from_num,body='What is location of "' + var + '"?')
+        session['state'] = 'setCustomLocationLocation'
+        session['locationVarName'] = var
     return ''
 
 def setCustomLocationName(body, to_num, from_num):
