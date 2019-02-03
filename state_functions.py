@@ -53,15 +53,16 @@ def confirmCustomLocation(body, to_num, from_num):
         customLoc = {'name': var, 'location': loc}
         customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
         print(json.dumps(customLocations))
+        newCustomLocations = json.loads(defaultCustomLocations)
         for custLoc in customLocations['locations']:
             if custLoc['name'] == var:
-                customLocations['locations'].append(customLoc)
+                newCustomLocations['locations'].append(customLoc)
                 exists = True
             else:
-                customLocations['locations'].append(loc)
+                newCustomLocations['locations'].append(loc)
         if exists == False:
-            customLocations['locations'].append(customLoc)
-        session['customLocations'] = json.dumps(customLocations)
+            newCustomLocations['locations'].append(customLoc)
+        session['customLocations'] = json.dumps(newCustomLocations)
         client.messages.create(to=to_num, from_=from_num,body='Set custom location "' + var + '" with value of "' + loc + '".')
         session['locationVarName'] = ''
         session['locationVarLocation'] = ''
