@@ -49,6 +49,7 @@ def getTo(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body=confirmto)
         return toLoc
     else:
+        client.messages.create(to=to_num, from_=from_num, body="Sorry, please check that your location exists on planet earth.")
         setGetTo(body, to_num, from_num)
 
 def confirmTo(body, to_num, from_num):
@@ -76,6 +77,8 @@ def getFrom(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
         return fromLoc
     else:
+        client.messages.create(to=to_num, from_=from_num,
+                               body="Sorry, please check that your location exists on planet earth.")
         setGetFrom(body, to_num, from_num)
 
 def confirmFrom(body, to_num, from_num):
