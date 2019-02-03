@@ -4,6 +4,7 @@ import re
 from tokens import GOOGLE_API_KEY
 from flask import Flask, request, session
 from default_classes import defaultCustomLocations
+from google.cloud import vision
 
 def dms2dd(degrees, minutes, seconds, direction):
     dd = float(degrees) + float(minutes) / 60 + float(seconds) / (60 * 60)
@@ -150,3 +151,17 @@ def check_location(location):
         questionAddress = ploop["result"]["formatted_address"]
 
     return questionAddress
+
+def parse_image(image_url):
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = image_url
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    for text in texts:
+        print('\n"{}"'.format(text.description))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                     for vertex in text.bounding_poly.vertices])
+
+        print('bounds: {}'.format(','.join(vertices)))
