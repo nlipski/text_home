@@ -3,9 +3,8 @@ from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, parse_directions, locationsClass
-from default_classes import storedLocationClass, defaultCustomLocations
+from default_classes import storedLocationClass, defaultCustomLocations,parse_image
 from state_functions import setLocation, setCustomLocationName, setCustomLocationLocation, confirmCustomLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendLocationHelp, sendThanks, checkConfirm
-from tokens import client, GOOGLE_API_KEY, SECRET_KEY
 import datetime
 import json
 import os
@@ -30,6 +29,13 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
     print(request.values.get('subresource_uris', None))
+    if int(request.POST.get('NumMedia', 0)) != '0':
+        num_media = int(request.POST.get('NumMedia', 0))
+
+        media_files = [(request.POST.get("MediaUrl{}".format(i), ''),
+                        request.POST.get("MediaContentType{}".format(i), ''))
+                       for i in range(0, num_media)]
+        print(media_files)
 
     print('\n\n------------------START-------------------------')
     print('Message: ' + body)
