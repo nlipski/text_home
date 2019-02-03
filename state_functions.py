@@ -108,7 +108,7 @@ def sendThanks(body, to_num, from_num):
     return''
 
 def sendLocationHelp(body, to_num, from_num):
-    client.messages.create(to=to_num, from_=from_num,media_url="./images/IMG_8888.jpeg", body="Other Text")
+    client.messages.create(to=to_num, from_=from_num,media_url="https://i.imgur.com/nj0RiEe.jpg", body="Other Text")
     return''
 
 def checkConfirm(message):
