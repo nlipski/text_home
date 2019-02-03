@@ -22,22 +22,20 @@ app.config.from_object(__name__)
 
 gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
 
-def html_tag_remover(line):
-    strart =-1
-    end = -1
-    while (line.find('<') != -1 and  line.find('>') != -1):
-        line= line[:line.find('<')] + line[line.find('>')+1:]
-    return line
-
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
+    print('I AM ACTUALLY DOING SHIT')
     body = request.values.get('Body', None)
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
 
     if body.lower() == 'clear session' or body.lower() == 'clear' or body.lower() == 'reset':
         clearConversationState()
+        client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
+        return ''
+    if body.lower() == 'clear all':
+        session.clear()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
         return ''
     elif body.lower() == 'map-help':
@@ -181,7 +179,6 @@ def sms_reply():
                 routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
                 client.messages.create(to=to_num, from_=from_num,body=routinglocation)
                 for step in directions.steps:
-                    step = html_tag_remover(step)
                     client.messages.create(to=to_num, from_=from_num,body=step)
                 session['state'] = 'new'
                 session['to_location'] = ''
@@ -196,8 +193,8 @@ def sms_reply():
         print('Message: ' + body)
         print('From Number: ' + from_num + ' To Number: ' + to_num)
         print('Next State: ' + session.get('state'))
-        print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
-        print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))
+        #print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
+        #print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))
         print('Mode: ' + locations.mode)
     return ''
 
