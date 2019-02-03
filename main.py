@@ -2,8 +2,8 @@ from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, session
 import googlemaps
-from inner_functions import get_locations, check_location, parse_directions, locationsClass
-from default_classes import storedLocationClass, defaultCustomLocations,parse_image
+from inner_functions import get_locations, check_location, parse_directions, locationsClass,parse_image
+from default_classes import storedLocationClass, defaultCustomLocations
 from state_functions import setLocation, setCustomLocationName, setCustomLocationLocation, confirmCustomLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendLocationHelp, sendThanks, checkConfirm
 import datetime
 import json
