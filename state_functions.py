@@ -41,11 +41,15 @@ def removeLocations(body, to_num, from_num):
 
 def getTo(body, to_num, from_num):
     toLoc = check_location(body)
-    session['to_location'] = toLoc
-    session['state'] = 'confirmTo'
-    confirmto = "Please confirm this is your destination: " + toLoc
-    client.messages.create(to=to_num, from_=from_num,body=confirmto)
-    return toLoc
+
+    if toLoc != "":
+        session['to_location'] = toLoc
+        session['state'] = 'confirmTo'
+        confirmto = "Please confirm this is your destination: " + toLoc
+        client.messages.create(to=to_num, from_=from_num,body=confirmto)
+        return toLoc
+    else:
+        setGetTo(body, to_num, from_num)
 
 def confirmTo(body, to_num, from_num):
     if (checkConfirm(body)):
@@ -64,11 +68,15 @@ def setGetTo(body, to_num, from_num):
 
 def getFrom(body, to_num, from_num):
     fromLoc = checkgeo_location(body)
-    session['from_location'] = fromLoc
-    session['state'] = 'confirmFrom'
-    confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
-    client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
-    return fromLoc
+
+    if fromLoc != "":
+        session['from_location'] = fromLoc
+        session['state'] = 'confirmFrom'
+        confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
+        client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
+        return fromLoc
+    else:
+        setGetFrom(body, to_num, from_num)
 
 def confirmFrom(body, to_num, from_num):
     if (checkConfirm(body)):

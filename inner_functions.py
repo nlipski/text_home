@@ -123,18 +123,16 @@ def autocomplete_location(location):
         "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" + GOOGLE_API_KEY + "&input=" + location+"&region=ca")
     testing = json.loads(r.text)
     if (testing['status'] == 'ZERO_RESULTS'):
-        return ''
+        return ""
     description = testing["predictions"][0]["description"]
     return description
 
 def check_location(location):
-    print('location' + location)
     r = requests.get(
         "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + GOOGLE_API_KEY + "&input=" + location + "&inputtype=textquery")#+"&region=ca")#+"&fields=geometry,formatted_address,place_id")
     testing = json.loads(r.text)
-    print("this is testing geo",testing)
     candidates = testing["candidates"]
-    print(r.text)
+
 
     questionAddress = ''
     if(testing["status"] == "ZERO_RESULTS"):
@@ -145,7 +143,5 @@ def check_location(location):
         ploop = json.loads(r.text)
         geocoord= ploop["result"]["geometry"]["location"]
         questionAddress = ploop["result"]["formatted_address"]
-        print( questionAddress  )
-        print ( geocoord)
 
     return questionAddress
