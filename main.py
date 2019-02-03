@@ -152,8 +152,10 @@ def sms_reply():
                 customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
                 for custLoc in customLocations:
                     if custLoc['name'] == var:
-                        custLoc['location'] = loc
+                        customLocations['locations'].append(customLoc)
                         exists = True
+                    else:
+                        customLocations['locations'].append(loc)
                 if not exists:
                     customLocations['locations'].append(customLoc)
                 session['customLocations'] = json.dumps(customLocations)

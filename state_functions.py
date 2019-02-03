@@ -100,7 +100,7 @@ def getHelp(body, to_num, from_num):
     helpMsg += 'set-location: This will walk you through the process of creating a custom saved location'
     helpMsg += 'get-locations: This will show all your saved locations'
     helpMsg += 'remove-locations: This will remove your saved locations'
-    client.messages.create(to=to_num, from_=from_num,body="")
+    client.messages.create(to=to_num, from_=from_num,body=helpMsg)
     return''
 
 def sendThanks(body, to_num, from_num):
