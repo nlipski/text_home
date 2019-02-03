@@ -24,7 +24,7 @@ def parse_dms(dms):
 def checkcustom_location(body):
     locs = json.loads(session.get('customLocations', defaultCustomLocations))
     print (json.dumps(locs))
-    for loc in locs.locations:
+    for loc in locs['locations']:
         if loc['name'] == body:
             session['confirmed_to'] = 1
             return loc['location']
@@ -73,12 +73,12 @@ def get_locations(incoming_text):
 
     locations = locationsClass()
     if fromLoc != '':
-        locations.fromLoc = checkcustom_location(fromLoc)
+        locations.fromLoc = check_location(fromLoc)
     else:
         locations.fromLoc = ''
 
     if toLoc != '':
-        locations.toLoc = checkcustom_location(toLoc)
+        locations.toLoc = check_location(toLoc)
     else:
         locations.toLoc = ''
 
