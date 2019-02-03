@@ -84,13 +84,11 @@ class directionsClass:
     time = ''
     steps = ''
 
-class geoClass:
-    location=''
-    geo=''
-
 class locationsClass:
-    fromLoc = ''#geoClass()
-    toLoc = ''#geoClass()
+    fromLoc = ''
+    lat = ''
+    lng = ''
+    toLoc = ''
     mode = ''
 
 def autocomplete_location(location):
@@ -110,12 +108,12 @@ def check_location(location):
     print("this is testing geo",testing)
     candidates = testing["candidates"]
     print(r.text)
-    geoadd=geoClass()
 
     questionAddress = ''
+    lat = ''
+    lng = ''
     if(testing["status"] == "ZERO_RESULTS"):
-        autoAddress = autocomplete_location(location)
-        questionAddress = autoAddress
+        questionAddress = autocomplete_location(location)
     else:
         r = requests.get(
                 "https://maps.googleapis.com/maps/api/place/details/json?key=" + GOOGLE_API_KEY + "&placeid=" + candidates[0]["place_id"])
@@ -124,8 +122,5 @@ def check_location(location):
         questionAddress = ploop["result"]["formatted_address"]
         print( questionAddress  )
         print ( geocoord)
-        #geoadd.geo=geocoord
-
-    #geoadd.location=questionAddress
 
     return questionAddress
