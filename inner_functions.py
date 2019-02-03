@@ -6,6 +6,8 @@ from flask import Flask, request, session
 from default_classes import defaultCustomLocations
 from google.cloud import vision
 
+GOOGLE_APPLICATION_CREDENTIALS=GOOGLE_API_KEY
+
 def dms2dd(degrees, minutes, seconds, direction):
     dd = float(degrees) + float(minutes) / 60 + float(seconds) / (60 * 60)
     if direction == 'S' or direction == 'W':
