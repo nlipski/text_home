@@ -64,8 +64,8 @@ def sms_reply():
         sendThanks(body, to_num, from_num)
         return ''
     elif body.lower().startswith('set-location'):
-        session['state'] = 'setLocation'
         clearConversationState()
+        session['state'] = 'setLocation'
         setLocation(body, to_num, from_num)
         return ''
     elif body.lower() == 'get-locations':
