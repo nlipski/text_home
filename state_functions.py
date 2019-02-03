@@ -77,16 +77,18 @@ def getLocations(body, to_num, from_num):
     locs = session.get('customLocations', defaultCustomLocations)
     if locs == defaultCustomLocations:
         client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
+        return ''
     elif locs == '':
         session['customLocations'] = defaultCustomLocations
         client.messages.create(to=to_num, from_=from_num,body="Error. Pleaser Try Again")
+        return ''
     else:
         message = "Your stored locations are:\n"
         print(locs)
         customLocations = json.loads(locs)
         for location in customLocations['locations']:
-            print(location)
-            message += str(location['name']) + ': ' + str(location['location']) + '\n'
+            print("asdfghjkljhgfdsfghjkljhgf" + json.dumps(location))
+            message += 'kk'#ocation['name'] + ': ' + location['location'] + '\n'
         client.messages.create(to=to_num, from_=from_num,body=message)
     return ''
 
