@@ -119,8 +119,7 @@ def sms_reply():
         elif state == 'setCustomLocation':
             var = session.get('locationVarName', '')
             loc = check_location(body)
-            print('jsgdfgsfkjhgasljhdfglajhsgfdjlhsagdfjagsdkjhfgaskjhdfgjhasd')
-            print(loc)
+
             if var != '' and loc != '':
                 session['locationVarLocation'] = loc
                 confirmloc = "Please confirm this is your location: " + loc
@@ -193,25 +192,8 @@ def sms_reply():
         print('Message: ' + body)
         print('From Number: ' + from_num + ' To Number: ' + to_num)
         print('Next State: ' + session.get('state'))
-        #print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
-        #print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))
         print('Mode: ' + locations.mode)
     return ''
-
-
-def send_direction(steps, from_num, to_num):
-        message = client.messages.create(to=to_num, from_=from_num,
-                                         body=steps)
-def get_directions(loc_from, loc_to, transport):
-    directions = []
-
-    now = datetime.datetime.now()
-    directions_result = gmaps.directions(loc_from,
-                                         loc_to,
-                                         mode=transport,
-                                         departure_time=now)
-
-    return directions_result
 
 
 if __name__ == "__main__":
