@@ -1,7 +1,8 @@
 from flask import Flask, request, session
-from inner_functions import check_location
+from inner_functions import check_location, checkgeo_location
 from tokens import client
 import json
+
 
 defaultLocations = json.dumps({'locations':[]})
 
@@ -39,20 +40,17 @@ def removeLocations(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body="Successfully removed stored locations.")
 
 def getTo(body, to_num, from_num):
-    toLoc = ''
-    locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
-    for loc in locs:
-        if loc['name'] == body:
-            toLoc = loc['location']
-            session['state'] = 'continue'
-            session['confirmed_to'] = 1
-    if toLoc == '':
-        toLoc = check_location(body)
+    toLoc = check_location(body)
+
+    if toLoc != "":
+        session['to_location'] = toLoc
         session['state'] = 'confirmTo'
         confirmto = "Please confirm this is your destination: " + toLoc
         client.messages.create(to=to_num, from_=from_num,body=confirmto)
-    session['to_location'] = toLoc
-    return toLoc
+        return toLoc
+    else:
+        client.messages.create(to=to_num, from_=from_num, body="Sorry, please check that your location exists on planet earth.")
+        setGetTo(body, to_num, from_num)
 
 def confirmTo(body, to_num, from_num):
     if (checkConfirm(body)):
@@ -66,21 +64,22 @@ def setGetTo(body, to_num, from_num):
     session['state'] = 'getTo'
     client.messages.create(to=to_num, from_=from_num,body="Okay, where do you want to go?")
 
+
+
+
 def getFrom(body, to_num, from_num):
-    fromLoc = ''
-    locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
-    for loc in locs:
-        if loc['name'] == body:
-            fromLoc = loc['location']
-            session['state'] = 'continue'
-            session['confirmed_to'] = 1
-    if fromLoc == '':
-        fromLoc = check_location(body)
+    fromLoc = checkgeo_location(body)
+
+    if fromLoc != "":
+        session['from_location'] = fromLoc
         session['state'] = 'confirmFrom'
         confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
         client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
-    session['from_location'] = fromLoc
-    return fromLoc
+        return fromLoc
+    else:
+        client.messages.create(to=to_num, from_=from_num,
+                               body="Sorry, please check that your location exists on planet earth.")
+        setGetFrom(body, to_num, from_num)
 
 def confirmFrom(body, to_num, from_num):
     if (checkConfirm(body)):
