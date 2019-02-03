@@ -54,7 +54,7 @@ def confirmCustomLocation(body, to_num, from_num):
                 newCustomLocations['locations'].append(customLoc)
                 exists = True
             else:
-                newCustomLocations['locations'].append(loc)
+                newCustomLocations['locations'].append(custLoc)
         if exists == False:
             newCustomLocations['locations'].append(customLoc)
         session['customLocations'] = json.dumps(newCustomLocations)
