@@ -115,6 +115,7 @@ def getTo(body, to_num, from_num):
 
 def confirmTo(body, to_num, from_num):
     if (checkConfirm(body)):
+        session['state'] = 'continue'
         session['confirmed_to'] = 1
         return True
     else:
@@ -143,6 +144,7 @@ def getFrom(body, to_num, from_num):
 
 def confirmFrom(body, to_num, from_num):
     if (checkConfirm(body)):
+        session['state'] = 'continue'
         session['confirmed_from'] = 1
         return True
     else:
