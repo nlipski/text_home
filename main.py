@@ -143,6 +143,8 @@ def sms_reply():
         elif state == 'confirmCustomLocation':
             confirmCustomLocation(body, to_num, from_num)
             return ''
+        elif state == 'error' or state == 'continue':
+            return ''
         else:
             checkLocations = 1
         

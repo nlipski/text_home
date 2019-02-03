@@ -66,7 +66,7 @@ def confirmCustomLocation(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body='Set custom location "' + var + '" with value of "' + loc + '".')
         session['locationVarName'] = ''
         session['locationVarLocation'] = ''
-        session['state'] = ''
+        session['state'] = 'continue'
     else: 
         client.messages.create(to=to_num, from_=from_num,body='Okay, What is location of "' + var + '"?')
         session['state'] = 'setCustomLocationLocation'
