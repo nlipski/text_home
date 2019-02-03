@@ -39,7 +39,7 @@ def sms_reply():
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
         return ''
     elif body.lower() == 'where am i':
-        
+        sendLocationHelp(body, to_num, from_num)
         return ''
     elif body.lower() == 'map-help' or body.lower() = 'idk':
         getHelp(body, to_num, from_num)

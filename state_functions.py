@@ -107,6 +107,10 @@ def sendThanks(body, to_num, from_num):
     client.messages.create(to=to_num, from_=from_num,body="You're Welcome! 😊")
     return''
 
+def sendLocationHelp(body, to_num, from_num):
+    client.messages.create(to=to_num, from_=from_num,media_url="./images/IMG_8888.jpeg", body="Other Text")
+    return''
+
 def checkConfirm(message):
     txt = message.lower()
     if (txt == 'yes' or txt == 'y' or txt == 'ye' or txt == 'yea' or txt == 'oui' or txt == 'yup' or txt == 'yep'):
