@@ -41,7 +41,7 @@ def sms_reply():
     elif body.lower() == 'where am i':
         sendLocationHelp(body, to_num, from_num)
         return ''
-    elif body.lower() == 'map-help' or body.lower() = 'idk':
+    elif body.lower() == 'map-help' or body.lower() == 'idk':
         getHelp(body, to_num, from_num)
         return ''
     elif body.lower() == 'thanks' or body.lower() == 'thank you':
