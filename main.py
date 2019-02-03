@@ -29,7 +29,7 @@ def sms_reply():
     body = request.values.get('Body', None)
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
-    print(request.values.get('Media', None))
+    print(request.values.get('subresource_uris', None))
 
     if body.lower() == 'clear session' or body.lower() == 'clear' or body.lower() == 'reset':
         clearConversationState()
