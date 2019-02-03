@@ -154,12 +154,14 @@ def check_location(location):
 
     return questionAddress
 
+
+
 def parse_image(image_url):
     r = requests.post(
         "https://vision.googleapis.com/v1/images:annotate?key ="+GOOGLE_API_KEY+"&image="+"&source="+"&gcsImageUri="+image_url)
     ploop = json.loads(r.text)
     print (ploop)
-    """
+
     client = vision.ImageAnnotatorClient()
     image = vision.types.Image()
     image.source.image_uri = image_url
@@ -172,4 +174,3 @@ def parse_image(image_url):
                      for vertex in text.bounding_poly.vertices])
 
         print('bounds: {}'.format(','.join(vertices)))
-    """
