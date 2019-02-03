@@ -3,6 +3,35 @@ import json
 import re 
 from tokens import GOOGLE_API_KEY
 
+def dms2dd(degrees, minutes, seconds, direction):
+    dd = float(degrees) + float(minutes) / 60 + float(seconds) / (60 * 60)
+    if direction == 'S' or direction == 'W':
+        dd *= -1
+    return dd
+
+
+def parse_dms(dms):
+    try:
+        parts = re.split('[^\d\w]+', dms)
+        lat = dms2dd(parts[0], parts[1], parts[2], parts[3])
+        lng = dms2dd(parts[4], parts[5], parts[6], parts[7])
+        return lat, lng
+    except:
+        return "", ""
+
+
+def checkgeo_location(body):
+    lat, lng = parse_dms(body)
+    if lat != "" and lng != "":
+        r = requests.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(lng) + "&key=" + GOOGLE_API_KEY)
+        testing = json.loads(r.text)
+        fromLoc = testing["results"][0]["formatted_address"]
+    else:
+        fromLoc = check_location(body)
+
+    return fromLoc
+
+
 def get_locations(incoming_text):
     data={"document":{"type":"PLAIN_TEXT","content":incoming_text},"encodingType":"UTF16"}
 

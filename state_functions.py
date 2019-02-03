@@ -1,7 +1,8 @@
 from flask import Flask, request, session
-from inner_functions import check_location
+from inner_functions import check_location, checkgeo_location
 from tokens import client
 import json
+
 
 defaultLocations = json.dumps({'locations':[]})
 
@@ -58,8 +59,11 @@ def setGetTo(body, to_num, from_num):
     session['state'] = 'getTo'
     client.messages.create(to=to_num, from_=from_num,body="Okay, where do you want to go?")
 
+
+
+
 def getFrom(body, to_num, from_num):
-    fromLoc = check_location(body)
+    fromLoc = checkgeo_location(body)
     session['from_location'] = fromLoc
     session['state'] = 'confirmFrom'
     confirmfrom = "Please confirm this is where you are coming from: " + fromLoc
