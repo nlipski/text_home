@@ -158,7 +158,7 @@ def parse_image(image_url):
     r = requests.post(
         "https://vision.googleapis.com/v1/images:annotate?key ="+GOOGLE_API_KEY+"&image="+"&source="+"&gcsImageUri="+image_url)
     ploop = json.loads(r.text)
-    print (plop)
+    print (ploop)
     """
     client = vision.ImageAnnotatorClient()
     image = vision.types.Image()
