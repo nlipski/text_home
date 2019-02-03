@@ -5,17 +5,17 @@ import googlemaps
 from inner_functions import get_locations, check_location, parse_directions, locationsClass
 from default_classes import storedLocationClass
 from state_functions import defaultLocations, setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, checkConfirm
-from tokens import client, GOOGLE_API_KEY
+from tokens import client, GOOGLE_API_KEY, SECRET_KEY
 import datetime
 import json
 import os
 
-SECRET_KEY = os.environ['SECRET_KEY']
-GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
-TWILIO_ACCOUNT = os.environ['TWILIO_ACCOUNT']
-TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
+# SECRET_KEY = os.environ['SECRET_KEY']
+# GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
+# TWILIO_ACCOUNT = os.environ['TWILIO_ACCOUNT']
+# TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
 
-client = Client(TWILIO_ACCOUNT, TWILIO_TOKEN)
+# client = Client(TWILIO_ACCOUNT, TWILIO_TOKEN)
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -84,10 +84,19 @@ def sms_reply():
                 confirmedTo = 0
                 confirmedFrom = 0
 
+        print('\n\n------------------START-------------------------')
+        print('Message: ' + body)
+        print('From Number: ' + from_num + ' To Number: ' + to_num)
+        print('State: ' + state)
+        print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
+        print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))
+        print('Mode: ' + locations.mode)
+
         checkLocations = 0
         if state == 'new':
             locations = get_locations(body)
-            session['locations'] = locations.toLoc
+            session['state'] = 'continue'
+            session['to_location'] = locations.toLoc
             session['from_location'] = locations.fromLoc
             session['transport_mode'] = locations.mode
             checkLocations = 1
@@ -143,6 +152,11 @@ def sms_reply():
             return ''
         else:
             checkLocations = 1
+
+        print('\n\n---------------------MIDDLE----------------------')
+        print(locations.toLoc)
+        print(locations.fromLoc)
+        print(str(checkLocations))
         
         if checkLocations == 1:
             if locations.toLoc == '':
@@ -150,13 +164,17 @@ def sms_reply():
                 setGetTo(body, to_num, from_num)
             elif confirmedTo == 0:
                 print('b')
-                confirmTo(body, to_num, from_num)
+                session['state'] = 'confirmTo'
+                confirmto = "Please confirm this is your destination " + locations.toLoc
+                client.messages.create(to=to_num, from_=from_num,body=confirmto)
             elif locations.fromLoc == '':
                 print('c')
                 setGetFrom(body, to_num, from_num)
             elif confirmedFrom  == 0:
                 print('d')
-                confirmFrom(body, to_num, from_num)
+                session['state'] = 'confirmFrom'
+                confirmfrom = "Please confirm this is where you are coming from: " + locations.fromLoc
+                client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
             else:
                 directions = parse_directions(locations)
                 routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
@@ -172,12 +190,13 @@ def sms_reply():
                 session['confirmed_from'] = 0
                 client.messages.create(to=to_num, from_=from_num,body='Done!')
 
-    print('Message: ' + body)
-    print('From Number: ' + from_num + ' To Number: ' + to_num)
-    print('State: ' + state)
-    print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
-    print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))
-    print('Mode: ' + locations.mode)
+        print('\n\n------------------END-------------------------')
+        print('Message: ' + body)
+        print('From Number: ' + from_num + ' To Number: ' + to_num)
+        print('Next State: ' + session.get('state'))
+        print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
+        print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))
+        print('Mode: ' + locations.mode)
     return ''
 
 def cleanup_message(step):
