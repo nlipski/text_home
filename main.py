@@ -30,7 +30,7 @@ def sms_reply():
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
     print(request.values.get('subresource_uris', None))
-
+    """
     if request.values['NumMedia'] != '0':
         # Use the message SID as a filename.
         image_url = ""
@@ -38,7 +38,7 @@ def sms_reply():
         image_url = request.form['MediaUrl0']
         print(filename)
         parse_image(str(image_url))
-
+    """
 
     print('\n\n------------------START-------------------------')
     print('Message: ' + body)
