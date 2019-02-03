@@ -176,7 +176,7 @@ def sendLocationHelp(body, to_num, from_num):
 
 def checkConfirm(message):
     txt = message.lower()
-    if (txt == 'yes' or txt == 'y' or txt == 'ye' or txt == 'yea' or txt == 'oui' or txt == 'yup' or txt == 'yep'):
+    if (len(txt) > 0 and (txt == 'yes' or txt[0] == 'y' or txt == 'ye' or txt == 'yea' or txt == 'oui' or txt == 'yup' or txt == 'yep')):
         return True
     else:
         return False
