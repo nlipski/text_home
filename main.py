@@ -69,7 +69,7 @@ def sms_reply():
         removeLocations(body, to_num, from_num)
         return ''
     else:
-        state = session.get('state', 'new')
+        state = session.get('state', '')
         lastTime = session.get('message_time', '')
         now = datetime.datetime.now()
         FMT = '%d-%m-%Y_%H:%M:%S'
@@ -161,6 +161,14 @@ def sms_reply():
                 session['confirmed_to'] = 0
                 session['confirmed_from'] = 0
                 client.messages.create(to=to_num, from_=from_num,body='Done!')
+
+        print('\n\n------------------END-------------------------')
+        print('Message: ' + body)
+        print('From Number: ' + from_num + ' To Number: ' + to_num)
+        print('State: ' + session.get('state', ''))
+        print('From: ' + session.get('from_location', '') + (' confirmed' if (session.get('confirmed_from', 0) == 1) else ' not confirmed'))
+        print('To: ' + session.get('to_location', '') + (' confirmed' if (session.get('confirmed_to', 0) == 1) else ' not confirmed'))
+        print('Mode: ' + session.get('mode', ''))
     return ''
 
 
