@@ -170,7 +170,7 @@ def sms_reply():
                 client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
             elif locations.mode == '':
                 setGetMode(body, to_num, from_num)
-            elif confirmedMode.mode == 0:
+            elif confirmedMode == 0:
                 session['state'] = 'confirmFrom'
                 confirmmode = "Please confirm this is your mode of transportation: " + locations.mode
                 client.messages.create(to=to_num, from_=from_num,body=confirmmode)
