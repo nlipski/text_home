@@ -4,7 +4,7 @@ from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, parse_directions, locationsClass
 from default_classes import storedLocationClass, defaultCustomLocations
-from state_functions import setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendLocationHelp, sendThanks, checkConfirm
+from state_functions import setLocation, setCustomLocationName, setCustomLocationLocation, confirmCustomLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendLocationHelp, sendThanks, checkConfirm
 from tokens import client, GOOGLE_API_KEY, SECRET_KEY
 import datetime
 import json
@@ -49,14 +49,15 @@ def sms_reply():
         sendThanks(body, to_num, from_num)
         return ''
     elif body.lower().startswith('set-location'):
-        print('set-locs' + body)
+        clearConversationState()
         setLocation(body, to_num, from_num)
         return ''
     elif body.lower() == 'get-locations':
-        print('get-locs')
+        clearConversationState()
         getLocations(body, to_num, from_num)
         return ''
     elif body.lower() == 'remove-locations':
+        clearConversationState()
         removeLocations(body, to_num, from_num)
         return ''
     else:
@@ -122,74 +123,27 @@ def sms_reply():
                 confirmedFrom = 1
                 checkLocations = 1
         elif state == 'setCustomLocationName':
-            print(state)
-            client.messages.create(to=to_num, from_=from_num,body='What is location of "' + body.lower() + '"?')
-            session['state'] = 'setCustomLocation'
-            session['locationVarName'] = body.lower()
-        elif state == 'setCustomLocation':
-            print(state)
-            var = session.get('locationVarName', '')
-            loc = check_location(body)
-
-            if var != '' and loc != '':
-                session['locationVarLocation'] = loc
-                confirmloc = "Please confirm this is your location: " + loc
-                client.messages.create(to=to_num, from_=from_num,body=confirmloc)
-                session['state'] = 'confirmCustomLocation'
-            else:
-                session['locationVarName'] = ''
-                session['locationVarLocation'] = ''
-                clearConversationState()
-                client.messages.create(to=to_num, from_=from_num,body='Error creating custom location. Please try again.')
+            setCustomLocationName(body, to_num, from_num)
+            return ''
+        elif state == 'setCustomLocationLocation':
+            setCustomLocationLocation(body, to_num, from_num)
             return ''
         elif state == 'confirmCustomLocation':
-            print(state)
-            var = session.get('locationVarName', '')
-            loc = session.get('locationVarLocation', '')
-            if var != '' and loc != '' and checkConfirm(body):
-                exists = False
-                customLoc = {'name': var, 'location': loc}
-                customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
-                for custLoc in customLocations:
-                    if custLoc['name'] == var:
-                        customLocations['locations'].append(customLoc)
-                        exists = True
-                    else:
-                        customLocations['locations'].append(loc)
-                if not exists:
-                    customLocations['locations'].append(customLoc)
-                session['customLocations'] = json.dumps(customLocations)
-                client.messages.create(to=to_num, from_=from_num,body='Set custom location "' + var + '" with value of "' + loc + '".')
-                session['locationVarName'] = ''
-                session['locationVarLocation'] = ''
-                clearConversationState()
-            else: 
-                client.messages.create(to=to_num, from_=from_num,body='Okay, What is location of "' + var + '"?')
-                session['state'] = 'getCustomLocation'
-                session['locationVarLocation'] = ''
+            confirmCustomLocation(body, to_num, from_num)
             return ''
         else:
             checkLocations = 1
-
-        print('\n\n---------------------MIDDLE----------------------')
-        print(locations.toLoc)
-        print(locations.fromLoc)
-        print(str(checkLocations))
         
         if checkLocations == 1:
             if locations.toLoc == '':
-                print('a')
                 setGetTo(body, to_num, from_num)
             elif confirmedTo == 0:
-                print('b')
                 session['state'] = 'confirmTo'
                 confirmto = "Please confirm this is your destination " + locations.toLoc
                 client.messages.create(to=to_num, from_=from_num,body=confirmto)
             elif locations.fromLoc == '':
-                print('c')
                 setGetFrom(body, to_num, from_num)
             elif confirmedFrom  == 0:
-                print('d')
                 session['state'] = 'confirmFrom'
                 confirmfrom = "Please confirm this is where you are coming from: " + locations.fromLoc
                 client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
@@ -207,12 +161,6 @@ def sms_reply():
                 session['confirmed_to'] = 0
                 session['confirmed_from'] = 0
                 client.messages.create(to=to_num, from_=from_num,body='Done!')
-
-        print('\n\n------------------END-------------------------')
-        print('Message: ' + body)
-        print('From Number: ' + from_num + ' To Number: ' + to_num)
-        print('Next State: ' + session.get('state'))
-        print('Mode: ' + locations.mode)
     return ''
 
 

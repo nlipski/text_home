@@ -5,18 +5,62 @@ import json
 from default_classes import defaultCustomLocations
 
 def setLocation(body, to_num, from_num):
-    clearConversationState()
     params = body.lower().split(' ')
     if len(params) > 2:
         client.messages.create(to=to_num, from_=from_num,body='Oops! Locations must only be 1 word.')
+        session['state'] = 'error'
     elif len (params) == 1:
         client.messages.create(to=to_num, from_=from_num,body='What is the name of the location?')
         session['state'] = 'setCustomLocationName'
     else:
         var = params[1]
         client.messages.create(to=to_num, from_=from_num,body='What is location of "' + var + '"?')
-        session['state'] = 'setCustomLocation'
+        session['state'] = 'setCustomLocationLocation'
         session['locationVarName'] = var
+
+def setCustomLocationName(body, to_num, from_num):
+    session['state'] = 'setCustomLocationLocation'
+    session['locationVarName'] = body.lower()
+    client.messages.create(to=to_num, from_=from_num,body='What is location of "' + body.lower() + '"?')
+
+def setCustomLocationLocation(body, to_num, from_num):
+    var = session.get('locationVarName', '')
+    loc = check_location(body)
+
+    if var != '' and loc != '':
+        session['locationVarLocation'] = loc
+        session['state'] = 'confirmCustomLocation'
+        client.messages.create(to=to_num, from_=from_num,body="Please confirm this is your location: " + loc)
+    else:
+        session['locationVarName'] = ''
+        session['locationVarLocation'] = ''
+        session['state'] = 'error'
+        client.messages.create(to=to_num, from_=from_num,body='Error creating custom location. Please try again.')
+
+def confirmCustomLocation(body, to_num, from_num):
+    var = session.get('locationVarName', '')
+    loc = session.get('locationVarLocation', '')
+    if var != '' and loc != '' and checkConfirm(body):
+        exists = False
+        customLoc = {'name': var, 'location': loc}
+        customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
+        for custLoc in customLocations['locations']:
+            if custLoc['name'] == var:
+                customLocations['locations'].append(customLoc)
+                exists = True
+            else:
+                customLocations['locations'].append(loc)
+        if exists == False:
+            customLocations['locations'].append(customLoc)
+        session['customLocations'] = json.dumps(customLocations)
+        client.messages.create(to=to_num, from_=from_num,body='Set custom location "' + var + '" with value of "' + loc + '".')
+        session['locationVarName'] = ''
+        session['locationVarLocation'] = ''
+        session['state'] = ''
+    else: 
+        client.messages.create(to=to_num, from_=from_num,body='Okay, What is location of "' + var + '"?')
+        session['state'] = 'getCustomLocation'
+        session['locationVarLocation'] = ''
 
 def getLocations(body, to_num, from_num):
     locs = session.get('customLocations', defaultCustomLocations)
@@ -93,12 +137,12 @@ def setGetFrom(body, to_num, from_num):
 
 def getHelp(body, to_num, from_num):
     helpMsg = 'Tell TextHome where you want to go and additional prompts will help you through the process.\n\n'
-    helpMsg += 'If you don\'t know your current location please type in you can ask "Where Am I" to TextHome\n\n'
+    helpMsg += 'If you don\'t know your current location you can ask "Where Am I" to TextHome\n\n'
     helpMsg += 'Additional Functions:\n'
-    helpMsg += 'clear: This will clear your locations'
-    helpMsg += 'clear-all: This will clear all your saved data'
-    helpMsg += 'set-location: This will walk you through the process of creating a custom saved location'
-    helpMsg += 'get-locations: This will show all your saved locations'
+    helpMsg += 'clear: This will clear your locations\n'
+    helpMsg += 'clear-all: This will clear all your saved data\n'
+    helpMsg += 'set-location: This will walk you through the process of creating a custom saved location\n'
+    helpMsg += 'get-locations: This will show all your saved locations\n'
     helpMsg += 'remove-locations: This will remove your saved locations'
     client.messages.create(to=to_num, from_=from_num,body=helpMsg)
     return''
@@ -119,7 +163,7 @@ def checkConfirm(message):
         return False
 
 def clearConversationState():
-    session['state'] = 'new'
+    session['state'] = ''
     session['to_location'] = ''
     session['from_location'] = ''
     session['transport_mode'] = ''
