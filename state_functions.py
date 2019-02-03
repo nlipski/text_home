@@ -54,7 +54,7 @@ def confirmCustomLocation(body, to_num, from_num):
         customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
         print(json.dumps(customLocations))
         newCustomLocations = json.loads(defaultCustomLocations)
-        for custLoc in customLocations['locations']:
+        for custLoc in (customLocations['locations']):
             if custLoc['name'] == var:
                 newCustomLocations['locations'].append(customLoc)
                 exists = True
@@ -77,10 +77,13 @@ def getLocations(body, to_num, from_num):
     locs = session.get('customLocations', defaultCustomLocations)
     if locs == defaultCustomLocations:
         client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
+    elif locs == '':
+        session['customLocations'] = defaultCustomLocations
+        client.messages.create(to=to_num, from_=from_num,body="Error. Pleaser Try Again")
     else:
         message = "Your stored locations are:\n"
-        customLocations = json.loads(locs)
-        for location in customLocations['locations']:
+        customLocations = json.loads(locs)['locations']
+        for location in customLocations:
             message += location['name'] + ': ' + location['location'] + '\n'
         client.messages.create(to=to_num, from_=from_num,body=message)
     return ''
