@@ -4,7 +4,7 @@ from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, parse_directions, locationsClass
 from default_classes import storedLocationClass, defaultCustomLocations
-from state_functions import setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, checkConfirm
+from state_functions import setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, sendThanks, checkConfirm
 from tokens import client, GOOGLE_API_KEY, SECRET_KEY
 import datetime
 import json
@@ -34,12 +34,18 @@ def sms_reply():
         clearConversationState()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
         return ''
-    if body.lower() == 'clear all':
+    if body.lower() == 'clear-all':
         session.clear()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
         return ''
-    elif body.lower() == 'map-help':
+    elif body.lower() == 'where am i':
+        
+        return ''
+    elif body.lower() == 'map-help' or body.lower() = 'idk':
         getHelp(body, to_num, from_num)
+        return ''
+    elif body.lower() == 'thanks' or body.lower() == 'thank you':
+        sendThanks(body, to_num, from_num)
         return ''
     elif body.lower().startswith('set-location'):
         print('set-locs' + body)

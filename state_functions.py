@@ -92,7 +92,19 @@ def setGetFrom(body, to_num, from_num):
     client.messages.create(to=to_num, from_=from_num,body="Okay, where are you?")
 
 def getHelp(body, to_num, from_num):
-    client.messages.create(to=to_num, from_=from_num,body="Okay, where are you?")
+    helpMsg = 'Tell TextHome where you want to go and additional prompts will help you through the process.\n\n'
+    helpMsg += 'If you don\'t know your current location please type in you can ask "Where Am I" to TextHome\n\n'
+    helpMsg += 'Additional Functions:\n'
+    helpMsg += 'clear: This will clear your locations'
+    helpMsg += 'clear-all: This will clear all your saved data'
+    helpMsg += 'set-location: This will walk you through the process of creating a custom saved location'
+    helpMsg += 'get-locations: This will show all your saved locations'
+    helpMsg += 'remove-locations: This will remove your saved locations'
+    client.messages.create(to=to_num, from_=from_num,body="")
+    return''
+
+def sendThanks(body, to_num, from_num):
+    client.messages.create(to=to_num, from_=from_num,body="You're Welcome! 😊")
     return''
 
 def checkConfirm(message):
