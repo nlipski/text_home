@@ -1,10 +1,8 @@
 from flask import Flask, request, session
-from inner_functions import check_location, checkgeo_location
+from inner_functions import check_location, checkgeo_location, checkcustom_location
 from tokens import client
 import json
-
-
-defaultLocations = json.dumps({'locations':[]})
+from default_classes import defaultCustomLocations
 
 def setLocation(body, to_num, from_num):
     clearConversationState()
@@ -21,8 +19,8 @@ def setLocation(body, to_num, from_num):
         session['locationVarName'] = var
 
 def getLocations(body, to_num, from_num):
-    locs = session.get('customLocations', defaultLocations)
-    if locs == defaultLocations:
+    locs = session.get('customLocations', defaultCustomLocations)
+    if locs == defaultCustomLocations:
         client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
     else:
         message = "Your stored locations are:\n"
@@ -32,15 +30,15 @@ def getLocations(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body=message)
 
 def removeLocations(body, to_num, from_num):
-    locs = session.get('customLocations', defaultLocations)
-    if locs == defaultLocations:
+    locs = session.get('customLocations', defaultCustomLocations)
+    if locs == defaultCustomLocations:
         client.messages.create(to=to_num, from_=from_num,body="You don't have any stored locations.")
     else:
-        session['customLocations'] = defaultLocations
+        session['customLocations'] = defaultCustomLocations
         client.messages.create(to=to_num, from_=from_num,body="Successfully removed stored locations.")
 
 def getTo(body, to_num, from_num):
-    toLoc = check_location(body)
+    toLoc = checkcustom_location(body)
 
     if toLoc != "":
         session['to_location'] = toLoc
@@ -68,7 +66,7 @@ def setGetTo(body, to_num, from_num):
 
 
 def getFrom(body, to_num, from_num):
-    fromLoc = checkgeo_location(body)
+    fromLoc = checkcustom_location(body)
 
     if fromLoc != "":
         session['from_location'] = fromLoc

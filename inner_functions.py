@@ -3,6 +3,7 @@ import json
 import re 
 from tokens import GOOGLE_API_KEY
 from flask import Flask, request, session
+from default_classes import defaultCustomLocations
 
 def dms2dd(degrees, minutes, seconds, direction):
     dd = float(degrees) + float(minutes) / 60 + float(seconds) / (60 * 60)
@@ -20,6 +21,13 @@ def parse_dms(dms):
     except:
         return "", ""
 
+def checkcustom_location(body):
+    locs = session.get('customLocations', defaultCustomLocations)
+    for loc in locs:
+        if loc['name'] == body:
+            session['confirmed_to'] = 1
+            return loc['location']
+    return checkgeo_location(body)
 
 def checkgeo_location(body):
     lat, lng = parse_dms(body)
@@ -64,23 +72,12 @@ def get_locations(incoming_text):
 
     locations = locationsClass()
     if fromLoc != '':
-        newFromLoc = fromLoc
-        locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
-        print (json.dumps(locs))
-        for loc in locs:
-            if loc['name'] == fromLoc:
-                newFromLoc = loc['location']
-        locations.fromLoc = check_location(newFromLoc)
+        locations.fromLoc = checkcustom_location(fromLoc)
     else:
         locations.fromLoc = ''
 
     if toLoc != '':
-        newToLoc = toLoc
-        locs = json.loads(session.get('customLocations', json.dumps({'locations':[]})))
-        for loc in locs:
-            if loc['name'] == toLoc:
-                newFromLoc = loc['location']
-        locations.toLoc = check_location(newToLoc)
+        locations.toLoc = checkcustom_location(toLoc)
     else:
         locations.toLoc = ''
 

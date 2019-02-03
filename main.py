@@ -3,8 +3,8 @@ from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, session
 import googlemaps
 from inner_functions import get_locations, check_location, parse_directions, locationsClass
-from default_classes import storedLocationClass
-from state_functions import defaultLocations, setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, checkConfirm
+from default_classes import storedLocationClass, defaultCustomLocations
+from state_functions import setLocation, getLocations, removeLocations, getTo, setGetTo, confirmTo, getFrom, setGetFrom, confirmFrom, clearConversationState, getHelp, checkConfirm
 from tokens import client, GOOGLE_API_KEY, SECRET_KEY
 import datetime
 import json
@@ -141,7 +141,7 @@ def sms_reply():
             loc = session.get('locationVarLocation', '')
             if var != '' and loc != '' and checkConfirm(body):
                 customLoc = {'name': var, 'location': loc}
-                customLocations = json.loads(session.get('customLocations', defaultLocations))
+                customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
                 customLocations['locations'].append(customLoc)
                 session['customLocations'] = json.dumps(customLocations)
                 client.messages.create(to=to_num, from_=from_num,body='Set custom location "' + var + '" with value of "' + loc + '".')
