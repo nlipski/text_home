@@ -29,12 +29,13 @@ def sms_reply():
     body = request.values.get('Body', None)
     to_num = request.values.get('From', None)
     from_num = request.values.get('To', None)
+    print(request.values.get('Media', None))
 
     if body.lower() == 'clear session' or body.lower() == 'clear' or body.lower() == 'reset':
         clearConversationState()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
         return ''
-    if body.lower() == 'clear-all':
+    elif body.lower() == 'clear-all':
         session.clear()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
         return ''
@@ -146,9 +147,15 @@ def sms_reply():
             var = session.get('locationVarName', '')
             loc = session.get('locationVarLocation', '')
             if var != '' and loc != '' and checkConfirm(body):
+                exists = False
                 customLoc = {'name': var, 'location': loc}
                 customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
-                customLocations['locations'].append(customLoc)
+                for custLoc in customLocations:
+                    if custLoc['name'] == var:
+                        custLoc['location'] = loc
+                        exists = True
+                if not exists:
+                    customLocations['locations'].append(customLoc)
                 session['customLocations'] = json.dumps(customLocations)
                 client.messages.create(to=to_num, from_=from_num,body='Set custom location "' + var + '" with value of "' + loc + '".')
                 session['locationVarName'] = ''
