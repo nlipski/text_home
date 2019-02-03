@@ -82,9 +82,11 @@ def getLocations(body, to_num, from_num):
         client.messages.create(to=to_num, from_=from_num,body="Error. Pleaser Try Again")
     else:
         message = "Your stored locations are:\n"
-        customLocations = json.loads(locs)['locations']
-        for location in customLocations:
-            message += location['name'] + ': ' + location['location'] + '\n'
+        print(locs)
+        customLocations = json.loads(locs)
+        for location in customLocations['locations']:
+            print(location)
+            message += str(location['name']) + ': ' + str(location['location']) + '\n'
         client.messages.create(to=to_num, from_=from_num,body=message)
     return ''
 
