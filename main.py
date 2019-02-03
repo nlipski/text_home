@@ -77,7 +77,9 @@ def sms_reply():
         removeLocations(body, to_num, from_num)
         return ''
     else:
-        state = session.get('state', 'new')
+        state = session.get('state', '')
+        if state == '':
+            state = 'new'
         print('stateystate: ' + state)
         lastTime = session.get('message_time', '')
         now = datetime.datetime.now()
