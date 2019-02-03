@@ -162,19 +162,22 @@ def sms_reply():
                 confirmfrom = "Please confirm this is where you are coming from: " + locations.fromLoc
                 client.messages.create(to=to_num, from_=from_num,body=confirmfrom)
             else:
-                directions = parse_directions(locations)
-                routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
-                client.messages.create(to=to_num, from_=from_num,body=routinglocation)
-                for step in directions.steps:
-                    client.messages.create(to=to_num, from_=from_num,body=step)
-                session['state'] = 'new'
-                session['to_location'] = ''
-                session['from_location'] = ''
-                session['transport_mode'] = ''
-                session['message_time'] = ''
-                session['confirmed_to'] = 0
-                session['confirmed_from'] = 0
-                client.messages.create(to=to_num, from_=from_num,body='Done!')
+                try:
+                    directions = parse_directions(locations)
+                    routinglocation = "Sending directions from " + directions.start + " to " + directions.end + " by " + locations.mode + ".\nTime: " + directions.time
+                    client.messages.create(to=to_num, from_=from_num,body=routinglocation)
+                    for step in directions.steps:
+                        client.messages.create(to=to_num, from_=from_num,body=step)
+                    session['state'] = 'new'
+                    session['to_location'] = ''
+                    session['from_location'] = ''
+                    session['transport_mode'] = ''
+                    session['message_time'] = ''
+                    session['confirmed_to'] = 0
+                    session['confirmed_from'] = 0
+                    client.messages.create(to=to_num, from_=from_num,body='Done!')
+                except:
+                    client.messages.create(to=to_num, from_=from_num,body='Unfortunately we could not find a travel route')
 
         print('\n\n------------------END-------------------------')
         print('Message: ' + body)
