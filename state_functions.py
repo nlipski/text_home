@@ -62,7 +62,7 @@ def setGetTo(body, to_num, from_num):
     session['state'] = 'getTo'
     client.messages.create(to=to_num, from_=from_num,body="Okay, where do you want to go?")
 
-
+#Jonathon wrote this
 
 
 def getFrom(body, to_num, from_num):
