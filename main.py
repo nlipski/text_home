@@ -31,6 +31,14 @@ def sms_reply():
     from_num = request.values.get('To', None)
     print(request.values.get('subresource_uris', None))
 
+    print('\n\n------------------START-------------------------')
+    print('Message: ' + body)
+    print('From Number: ' + from_num + ' To Number: ' + to_num)
+    print('State: ' + session.get('state', ''))
+    print('From: ' + session.get('from_location', '') + (' confirmed' if (session.get('confirmed_from', 0) == 1) else ' not confirmed'))
+    print('To: ' + session.get('to_location', '') + (' confirmed' if (session.get('confirmed_to', 0) == 1) else ' not confirmed'))
+    print('Mode: ' + session.get('mode', ''))
+
     if body.lower() == 'clear session' or body.lower() == 'clear' or body.lower() == 'reset':
         clearConversationState()
         client.messages.create(to=to_num, from_=from_num,body='Session cleared successfully!')
@@ -92,14 +100,6 @@ def sms_reply():
                 state = 'new'
                 confirmedTo = 0
                 confirmedFrom = 0
-
-        print('\n\n------------------START-------------------------')
-        print('Message: ' + body)
-        print('From Number: ' + from_num + ' To Number: ' + to_num)
-        print('State: ' + state)
-        print('From: ' + locations.fromLoc + (' confirmed' if (confirmedTo == 1) else ' not confirmed'))
-        print('To: ' + locations.toLoc + (' confirmed' if (confirmedFrom == 1) else ' not confirmed'))
-        print('Mode: ' + locations.mode)
 
         checkLocations = 0
         if state == 'new':

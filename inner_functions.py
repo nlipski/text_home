@@ -23,7 +23,6 @@ def parse_dms(dms):
 
 def checkcustom_location(body):
     locs = json.loads(session.get('customLocations', defaultCustomLocations))
-    print (json.dumps(locs))
     for loc in locs['locations']:
         if loc['name'] == body:
             session['confirmed_to'] = 1
@@ -61,7 +60,6 @@ def get_locations(incoming_text):
             else:
                 fromLoc = entities["name"]
         elif entities["type"] == "OTHER":
-            print(entities["name"])
             if entities["name"] == "driving" or entities["name"] == "drive":
                 mode = "driving"
             if entities["name"] == "walking" or entities["name"] == "walk":
@@ -99,8 +97,6 @@ def parse_directions(locations):
     messageNum = 0
     directions.steps = ['']
     for step in unparsed["routes"][0]["legs"][0]["steps"]:
-        #direction = step["html_instructions"].replace('<b>','').replace('</b>','')
-        #direction = re.sub("<.*?>", " ", direction)
         direction = html_tag_remover(step["html_instructions"])
         line = str(stepNum) + '. ' + direction + '\n'
         if len(directions.steps[messageNum]) + len(line) > 1000:
@@ -114,7 +110,6 @@ def parse_directions(locations):
 def html_tag_remover(line):
     while (line.find('<') != -1 and  line.find('>') != -1):
         line= line[:line.find('<')] + line[line.find('>')+1:]
-    print(line)
     return line
 
 class directionsClass:
