@@ -52,6 +52,7 @@ def confirmCustomLocation(body, to_num, from_num):
         exists = False
         customLoc = {'name': var, 'location': loc}
         customLocations = json.loads(session.get('customLocations', defaultCustomLocations))
+        print(json.dumps(customLocations))
         for custLoc in customLocations['locations']:
             if custLoc['name'] == var:
                 customLocations['locations'].append(customLoc)
